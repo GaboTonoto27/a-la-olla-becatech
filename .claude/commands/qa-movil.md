@@ -1,0 +1,5 @@
+Realiza una auditoría completa de "A la Olla" como si fueras un jurado de BecaTech probando la app desde un celular (390x844) y un computador (1280x800):
+1. Ejecuta `npm run build` y corrige cualquier error o advertencia crítica.
+2. Si Playwright está disponible, abre la app local en vista móvil y escritorio, comprueba que no haya errores en consola ni textos cortados o desbordados.
+3. Prueba cada flujo crítico: Login + aceptación obligatoria de Términos, cambio de rol Comprador/Vendedor, crear pedido en "Pide para tu Olla", publicar en "Última Hora", activar/desactivar "Cuenta con refrigeración", abrir mapa Leaflet, enviar mensaje rápido en chat + bloquear/denunciar, abrir ChatBot/Soporte, revisar Panel Admin y descargar el PDF semanal con `jsPDF`.
+4. Entrega un listado corto de fallos encontrados y corrígelos.

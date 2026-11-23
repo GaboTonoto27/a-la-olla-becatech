@@ -9,6 +9,7 @@ export const USUARIOS_DEMO = [
     rol: 'ambos',
     modoInicial: 'vendedor',
     tipoPuesto: 'formal',
+    ciudadBase: 'bq',
     sinCelular: false,
   },
   {
@@ -20,6 +21,7 @@ export const USUARIOS_DEMO = [
     rol: 'vendedor',
     modoInicial: 'vendedor',
     tipoPuesto: 'informal',
+    ciudadBase: 'bq',
     sinCelular: true,
   },
   {

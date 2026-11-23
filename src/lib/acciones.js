@@ -67,6 +67,14 @@ export function retirarLote(e, id) {
   return { estado: { ...e, lotes }, resultado: true }
 }
 
+// Rebaja o ajusta el precio de rescate de un lote en vitrina. Si queda por encima del normal, sube el normal.
+export function ajustarPrecio(e, loteId, nuevo) {
+  const precio = Math.round(nuevo)
+  if (!(precio >= 1)) return { estado: e, resultado: false }
+  const lotes = e.lotes.map((l) => (l.id === loteId ? { ...l, rescate: precio, normal: Math.max(l.normal, precio) } : l))
+  return { estado: { ...e, lotes }, resultado: true }
+}
+
 export function apartar(e, usuario, loteId, cantidad, ahora = Date.now()) {
   const l = e.lotes.find((x) => x.id === loteId)
   if (!l || !loteActivo(l, ahora) || cantidad <= 0 || cantidad > l.cantidad) {

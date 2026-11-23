@@ -1,3 +1,4 @@
+import { cant } from '../../lib/unidades.js'
 import { useState } from 'react'
 import { Banknote, CheckCircle2, MapPin } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
@@ -37,7 +38,7 @@ export default function ApartarModal({ lote, onCerrar }) {
         </div>
         <ul className="space-y-2 text-base">
           <li>
-            <b>{apartado.cantidad} {apartado.unidad}</b> de {apartado.producto} en {apartado.puesto}
+            <b>{cant(apartado.cantidad, apartado.unidad)}</b> de {apartado.producto} en {apartado.puesto}
           </li>
           <li className="flex gap-2">
             <MapPin size={20} className="mt-0.5 shrink-0 text-olla" aria-hidden="true" />

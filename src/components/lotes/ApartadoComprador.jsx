@@ -1,3 +1,4 @@
+import { cant } from '../../lib/unidades.js'
 import { Ticket } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
@@ -24,7 +25,7 @@ export default function ApartadoComprador({ a }) {
             <Ticket size={22} className="text-olla" aria-hidden="true" /> {a.codigo}
           </p>
           <p className="text-base">
-            {a.cantidad} {a.unidad} de {a.producto} · {a.puesto}
+            {cant(a.cantidad, a.unidad)} de {a.producto} · {a.puesto}
           </p>
           <p className="text-base text-piedra">
             Barrio {a.barrio} · pagas {dinero(a.total, a.ciudad)} en efectivo

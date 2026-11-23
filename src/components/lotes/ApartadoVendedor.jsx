@@ -1,3 +1,4 @@
+import { cant } from '../../lib/unidades.js'
 import { BadgeCheck, ShieldCheck } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
@@ -16,7 +17,7 @@ export default function ApartadoVendedor({ a }) {
         <div>
           <p className="font-titulo text-2xl font-extrabold">{a.codigo}</p>
           <p className="text-base">
-            {a.cantidad} {a.unidad} de {a.producto} · {dinero(a.total, a.ciudad)} en efectivo
+            {cant(a.cantidad, a.unidad)} de {a.producto} · {dinero(a.total, a.ciudad)} en efectivo
           </p>
         </div>
         {confirmado && <Pill tono="olla">Confirmado</Pill>}

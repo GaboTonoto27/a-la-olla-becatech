@@ -1,5 +1,5 @@
 // Única puerta de entrada a localStorage. Si cambia la forma de los datos, sube VERSION.
-const VERSION = 2
+const VERSION = 3
 const CLAVE = 'alaolla:v' + VERSION
 
 const INICIAL = {
@@ -8,6 +8,7 @@ const INICIAL = {
   pactos: {},
   ciudadId: 'bq',
   sinCelular: {},
+  estandares: {},
   lotes: null,
   apartados: null,
   pedidos: null,

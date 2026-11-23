@@ -10,6 +10,8 @@ export const CIUDADES = [
     moneda: 'pesos colombianos',
     codigo: 'COP',
     factor: 1,
+    centro: [10.9275, -74.8045],
+    zoom: 16,
     coordinador: 'Coordinación Barranquilla',
   },
   {
@@ -21,6 +23,8 @@ export const CIUDADES = [
     moneda: 'pesos colombianos',
     codigo: 'COP',
     factor: 1,
+    centro: [4.6125, -74.0905],
+    zoom: 16,
     coordinador: 'Coordinación Bogotá',
   },
   {
@@ -32,6 +36,8 @@ export const CIUDADES = [
     moneda: 'pesos colombianos',
     codigo: 'COP',
     factor: 1,
+    centro: [6.2655, -75.5705],
+    zoom: 16,
     coordinador: 'Coordinación Medellín',
   },
   {
@@ -43,6 +49,8 @@ export const CIUDADES = [
     moneda: 'pesos mexicanos',
     codigo: 'MXN',
     factor: 0.0055,
+    centro: [19.3735, -99.0875],
+    zoom: 16,
     coordinador: 'Coordinación CDMX',
   },
 ]

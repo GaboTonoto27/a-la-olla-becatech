@@ -6,9 +6,11 @@ import AppShell from './components/layout/AppShell.jsx'
 const Login = lazy(() => import('./pages/Login.jsx'))
 const Inicio = lazy(() => import('./pages/Inicio.jsx'))
 const Cuenta = lazy(() => import('./pages/Cuenta.jsx'))
-const Proximamente = lazy(() => import('./pages/Proximamente.jsx'))
 const UltimaHora = lazy(() => import('./pages/UltimaHora.jsx'))
 const PidePaTuOlla = lazy(() => import('./pages/PidePaTuOlla.jsx'))
+const Puestos = lazy(() => import('./pages/Puestos.jsx'))
+const PerfilPuesto = lazy(() => import('./pages/PerfilPuesto.jsx'))
+const Mapa = lazy(() => import('./pages/Mapa.jsx'))
 const NoEncontrado = lazy(() => import('./pages/NoEncontrado.jsx'))
 const AdminInicio = lazy(() => import('./pages/admin/AdminInicio.jsx'))
 
@@ -42,7 +44,9 @@ export default function App() {
             <Route path="/" element={<SoloUsuarios><Inicio /></SoloUsuarios>} />
             <Route path="/pedidos" element={<SoloUsuarios><PidePaTuOlla /></SoloUsuarios>} />
             <Route path="/ultima-hora" element={<SoloUsuarios><UltimaHora /></SoloUsuarios>} />
-            <Route path="/mapa" element={<SoloUsuarios><Proximamente titulo="Mapa de puestos" /></SoloUsuarios>} />
+            <Route path="/puestos" element={<SoloUsuarios><Puestos /></SoloUsuarios>} />
+            <Route path="/puesto/:id" element={<SoloUsuarios><PerfilPuesto /></SoloUsuarios>} />
+            <Route path="/mapa" element={<SoloUsuarios><Mapa /></SoloUsuarios>} />
             <Route path="/cuenta" element={<SoloUsuarios><Cuenta /></SoloUsuarios>} />
             <Route path="/admin/*" element={<SoloAdmin><AdminInicio /></SoloAdmin>} />
           </Route>

@@ -1,4 +1,5 @@
 import { Minus, Plus } from 'lucide-react'
+import { unidadTexto } from '../../lib/unidades.js'
 
 // Contador grande con + y − (cada botón de 48 px) pa' kilos y cantidades.
 export default function Contador({ valor, onChange, min = 1, max = 999, paso = 1, unidad = 'kg', etiqueta }) {
@@ -12,7 +13,7 @@ export default function Contador({ valor, onChange, min = 1, max = 999, paso = 1
         <Minus size={22} aria-hidden="true" />
       </button>
       <span className="min-w-[5.5rem] text-center font-titulo text-3xl font-extrabold" aria-live="polite">
-        {valor} <span className="text-base font-bold text-piedra">{unidad}</span>
+        {valor} <span className="text-base font-bold text-piedra">{unidadTexto(valor, unidad)}</span>
       </span>
       <button type="button" className={boton} onClick={sube} disabled={valor >= max} aria-label="Agregar uno">
         <Plus size={22} aria-hidden="true" />

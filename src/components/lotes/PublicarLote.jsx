@@ -7,8 +7,18 @@ import Card from '../ui/Card.jsx'
 import Button from '../ui/Button.jsx'
 import Chip from '../ui/Chip.jsx'
 import Contador from '../ui/Contador.jsx'
+import { AvisoVentaBloqueada } from '../layout/AvisoPlaza.jsx'
+import { cant } from '../../lib/unidades.js'
 
-const UNIDADES = ['kg', 'lb', 'bolsa']
+const UNIDADES = ['kg', 'lb', 'bolsa', 'unidad']
+// Fórmulas de precio de los fruvers: sobre tu precio base.
+const FORMULAS = [
+  { pct: 40, etiqueta: '+40% Extra (ref.)' },
+  { pct: 20, etiqueta: "+20% Regular / Pa' Cocina" },
+  { pct: -20, etiqueta: '−20% Remate' },
+  { pct: -40, etiqueta: '−40% Urgente' },
+]
+const conPct = (base, pct) => Math.max(1, Math.round(base * (1 + pct / 100)))
 const VACIO = {
   producto: '', cat: 'fruta', unidad: 'kg', cantidad: 5, normal: 0, rescate: 0,
   motivo: MOTIVOS[0], uso: 'Guiso', nivel: 'cocina', apto: false,
@@ -16,7 +26,7 @@ const VACIO = {
 
 // Publicar en 3 pasos: 1) qué es, 2) cuántos, 3) precio de rescate + etiqueta rápida.
 export default function PublicarLote() {
-  const { ciudad, publicarLote } = useApp()
+  const { ciudad, publicarLote, ventaBloqueada } = useApp()
   const [paso, setPaso] = useState(1)
   const [f, setF] = useState(VACIO)
   const [otro, setOtro] = useState(false)
@@ -30,8 +40,8 @@ export default function PublicarLote() {
     setPaso(2)
   }
 
-  const conDescuento = (pct) => poner({ rescate: Math.max(1, Math.round(f.normal * (1 - pct / 100))) })
-  const valido = f.rescate > 0 && f.normal > 0 && f.rescate <= f.normal && f.apto
+  const valido = f.rescate > 0 && f.normal > 0 && f.apto
+  const cambioPct = f.normal > 0 ? Math.round((f.rescate / f.normal - 1) * 100) : 0
   const cria = f.nivel === 'cria'
 
   const publicar = () => {
@@ -40,7 +50,7 @@ export default function PublicarLote() {
       cat: f.cat,
       unidad: f.unidad,
       cantidad: f.cantidad,
-      normal: f.normal,
+      normal: Math.max(f.normal, f.rescate),
       rescate: f.rescate,
       motivo: f.motivo,
       uso: cria ? 'Cría y abono' : f.uso,
@@ -51,6 +61,8 @@ export default function PublicarLote() {
     setPaso(1)
   }
 
+  if (ventaBloqueada) return <AvisoVentaBloqueada />
+
   if (publicado) {
     return (
       <Card className="space-y-3 border-[#BCD8C5] bg-[#E7F1EA]">
@@ -58,7 +70,7 @@ export default function PublicarLote() {
           <CheckCircle2 size={24} aria-hidden="true" /> ¡Publicado!
         </p>
         <p className="text-base">
-          {publicado.cantidad} {publicado.unidad} de {publicado.producto} a {dinero(publicado.rescate, publicado.ciudad)}. Se retira solo a las 4:00 p. m. si nadie lo aparta.
+          {cant(publicado.cantidad, publicado.unidad)} de {publicado.producto} a {dinero(publicado.rescate, publicado.ciudad)}. Se retira solo a las 4:00 p. m. si nadie lo aparta.
         </p>
         <Button onClick={() => setPublicado(null)} className="w-full sm:w-auto">Publicar otro</Button>
       </Card>
@@ -126,40 +138,53 @@ export default function PublicarLote() {
       {paso === 3 && (
         <div className="space-y-4">
           <p className="text-lg font-semibold">
-            {f.cantidad} {f.unidad} de {f.producto}
+            {cant(f.cantidad, f.unidad)} de {f.producto}
           </p>
 
-          <div>
-            <label className="mb-1 block text-base font-bold" htmlFor="normal">Precio normal por {f.unidad}</label>
-            <input
-              id="normal"
-              type="number"
-              inputMode="numeric"
-              min="1"
-              value={f.normal || ''}
-              onChange={(e) => poner({ normal: Number(e.target.value) })}
-              className="min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base"
-            />
-          </div>
-
-          <div>
-            <p className="mb-2 text-base font-bold">Precio de rescate</p>
-            <div className="mb-2 flex flex-wrap gap-2">
-              <Chip onClick={() => conDescuento(20)}>−20%</Chip>
-              <Chip onClick={() => conDescuento(40)}>−40%</Chip>
-              <Chip onClick={() => conDescuento(50)}>−50%</Chip>
+          <div className="space-y-3 rounded-2xl border border-borde bg-white p-3">
+            <div>
+              <label className="mb-1 block text-base font-bold" htmlFor="normal">Tu precio base por {f.unidad}</label>
+              <input
+                id="normal"
+                type="number"
+                inputMode="numeric"
+                min="1"
+                value={f.normal || ''}
+                onChange={(e) => {
+                  const base = Number(e.target.value)
+                  poner({ normal: base, rescate: conPct(base, cambioPct) })
+                }}
+                className="min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base"
+              />
             </div>
-            <input
-              type="number"
-              inputMode="numeric"
-              min="1"
-              value={f.rescate || ''}
-              onChange={(e) => poner({ rescate: Number(e.target.value) })}
-              aria-label="Precio de rescate"
-              className="min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base"
-            />
-            {f.rescate > f.normal && f.normal > 0 && (
-              <p className="mt-1 text-base font-bold text-[#A8391B]">El rescate debe ser menor al precio normal.</p>
+            <div>
+              <p className="mb-2 text-base font-bold">Calculadora rápida (opcional)</p>
+              <div className="flex flex-wrap gap-2">
+                {FORMULAS.map((fm) => (
+                  <Chip key={fm.pct} activo={f.normal > 0 && f.rescate === conPct(f.normal, fm.pct)} onClick={() => f.normal > 0 && poner({ rescate: conPct(f.normal, fm.pct) })}>
+                    {fm.etiqueta}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-base font-bold" htmlFor="final">Precio final (puedes escribir el monto que quieras)</label>
+              <input
+                id="final"
+                type="number"
+                inputMode="numeric"
+                min="1"
+                value={f.rescate || ''}
+                onChange={(e) => poner({ rescate: Number(e.target.value) })}
+                className="min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base"
+              />
+            </div>
+            {f.normal > 0 && f.rescate > 0 && (
+              <p className="text-base font-bold" aria-live="polite">
+                <span className="font-titulo text-2xl font-extrabold text-olla">{dinero(f.rescate, ciudad.id)}/{f.unidad}</span>
+                {' · '}
+                {cambioPct < 0 ? `Ahorra ${Math.abs(cambioPct)}%` : cambioPct > 0 ? `${cambioPct}% sobre tu base` : 'Igual a tu base'}
+              </p>
             )}
           </div>
 

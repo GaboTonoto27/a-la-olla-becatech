@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { CalendarClock, PackageOpen, Trash2, Zap } from 'lucide-react'
+import { CalendarClock, Map, PackageOpen, SlidersHorizontal, Store, Trash2, Zap } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useAhora } from '../lib/useAhora.js'
 import { loteActivo } from '../lib/acciones.js'
@@ -15,6 +15,20 @@ import ApartadoComprador from '../components/lotes/ApartadoComprador.jsx'
 import ApartadoVendedor from '../components/lotes/ApartadoVendedor.jsx'
 import PublicarLote from '../components/lotes/PublicarLote.jsx'
 import SinCelularCard from '../components/SinCelularCard.jsx'
+import AvisoPlaza from '../components/layout/AvisoPlaza.jsx'
+import AjustarPrecioModal from '../components/lotes/AjustarPrecioModal.jsx'
+import ComoFuncionanEstandares from '../components/puestos/ComoFuncionanEstandares.jsx'
+import { cant } from '../lib/unidades.js'
+
+function Accesos() {
+  return (
+    <div className="grid gap-2 sm:grid-cols-3">
+      <Button to="/puestos" variante="contorno" icono={Store}>Ver puestos</Button>
+      <Button to="/mapa" variante="contorno" icono={Map}>Ver mapa</Button>
+      <ComoFuncionanEstandares />
+    </div>
+  )
+}
 
 function AvisoCierre({ ahora }) {
   const sabado = esSabado(ahora)
@@ -57,7 +71,9 @@ function Comprador({ ahora }) {
         <h1 className="text-3xl sm:text-4xl">Última hora</h1>
         <p className="mt-1 text-lg text-piedra">Comida buena de {ciudad.plaza}, a menor precio antes del cierre.</p>
       </div>
+      <AvisoPlaza />
       <AvisoCierre ahora={ahora} />
+      <Accesos />
 
       {mios.length > 0 && (
         <section className="space-y-3" aria-label="Mis apartados">
@@ -104,6 +120,7 @@ function Comprador({ ahora }) {
 
 function Vendedor({ ahora }) {
   const { lotes, apartados, usuario, ciudad, retirarLote } = useApp()
+  const [ajustando, setAjustando] = useState(null)
   const mios = lotes.filter((l) => l.vendedorId === usuario.id && l.ciudad === ciudad.id && loteActivo(l, ahora))
   const porAtender = apartados.filter(
     (a) => a.vendedorId === usuario.id && a.ciudad === ciudad.id && (a.estado === 'apartado' || a.estado === 'confirmado'),
@@ -115,7 +132,9 @@ function Vendedor({ ahora }) {
         <h1 className="text-3xl sm:text-4xl">Última hora</h1>
         <p className="mt-1 text-lg text-piedra">Publica lo que te sobra antes del cierre. Sin fotos de fruta fea.</p>
       </div>
+      <AvisoPlaza />
       <AvisoCierre ahora={ahora} />
+      <Accesos />
       <SinCelularCard />
 
       <section className="space-y-3" aria-label="Apartados">
@@ -144,14 +163,18 @@ function Vendedor({ ahora }) {
               <div>
                 <p className="text-lg font-bold">{l.producto}</p>
                 <p className="text-base text-piedra">
-                  {l.cantidad > 0 ? `Quedan ${l.cantidad} ${l.unidad}` : 'Agotado'} · {dinero(l.rescate, l.ciudad)}/{l.unidad} · {textoRestante(l.vence, ahora)}
+                  {l.cantidad > 0 ? `Quedan ${cant(l.cantidad, l.unidad)}` : 'Agotado'} · {dinero(l.rescate, l.ciudad)}/{l.unidad} · {textoRestante(l.vence, ahora)}
                 </p>
               </div>
-              <Button variante="suave" icono={Trash2} onClick={() => retirarLote(l.id)}>Retirar</Button>
+              <div className="flex flex-wrap gap-2">
+                <Button variante="suave" icono={SlidersHorizontal} onClick={() => setAjustando(l)}>Ajustar precio</Button>
+                <Button variante="suave" icono={Trash2} onClick={() => retirarLote(l.id)}>Retirar</Button>
+              </div>
             </Card>
           ))
         )}
       </section>
+      {ajustando && <AjustarPrecioModal key={ajustando.id} lote={ajustando} onCerrar={() => setAjustando(null)} />}
     </div>
   )
 }

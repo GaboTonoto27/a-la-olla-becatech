@@ -1,4 +1,4 @@
-import { Snowflake, Sprout, ChefHat, BadgeCheck } from 'lucide-react'
+import { Sprout, ChefHat, BadgeCheck } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { descuento } from '../../lib/dinero.js'
 import { NIVELES } from '../../data/semilla.js'
@@ -8,9 +8,13 @@ import Button from '../ui/Button.jsx'
 import FotoLote from './FotoLote.jsx'
 import TiempoBarra from './TiempoBarra.jsx'
 import SinCelularAviso from '../SinCelularAviso.jsx'
+import { SelloFrio } from '../puestos/Sellos.jsx'
+import { cant } from '../../lib/unidades.js'
 
 export default function LoteCard({ lote, ahora, onApartar }) {
-  const { sinCelular } = useApp()
+  const { sinCelular, estandaresDe } = useApp()
+  const frio = estandaresDe(lote.vendedorId).frio ?? lote.frio
+  const ahorro = descuento(lote.normal, lote.rescate)
   const cria = lote.nivel === 'cria'
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-borde bg-white shadow-[0_1px_2px_rgba(28,31,29,0.04)]">
@@ -30,17 +34,13 @@ export default function LoteCard({ lote, ahora, onApartar }) {
           <Pill tono={cria ? 'ambar' : 'olla'} icono={cria ? Sprout : ChefHat}>
             {NIVELES[lote.nivel]}
           </Pill>
-          {lote.frio ? (
-            <Pill tono="frio" icono={Snowflake}>Con nevera</Pill>
-          ) : (
-            <Pill>Sin nevera — pa' consumo inmediato</Pill>
-          )}
+          <SelloFrio frio={Boolean(frio)} />
         </div>
 
         <div>
           <Precio normal={lote.normal} rescate={lote.rescate} unidad={lote.unidad} ciudad={lote.ciudad} />
           <p className="mt-1 text-sm font-semibold text-piedra">
-            Ahorras {descuento(lote.normal, lote.rescate)}% · quedan {lote.cantidad} {lote.unidad}
+            {ahorro > 0 ? `Ahorras ${ahorro}% · ` : ''}quedan {cant(lote.cantidad, lote.unidad)}
           </p>
         </div>
 

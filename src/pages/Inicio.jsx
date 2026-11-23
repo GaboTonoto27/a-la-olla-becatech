@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ShoppingBasket, Zap, MapPin, Info } from 'lucide-react'
+import { ShoppingBasket, Zap, MapPin, Store } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useAhora } from '../lib/useAhora.js'
 import { loteActivo } from '../lib/acciones.js'
@@ -9,12 +9,14 @@ import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import Pill from '../components/ui/Pill.jsx'
 import SinCelularCard from '../components/SinCelularCard.jsx'
+import AvisoPlaza from '../components/layout/AvisoPlaza.jsx'
+import { cant } from '../lib/unidades.js'
 
 function Cifra({ valor, etiqueta, to }) {
   return (
-    <Card as={to ? Link : 'div'} to={to} className="block p-4">
-      <p className="font-titulo text-4xl font-extrabold text-olla">{valor}</p>
-      <p className="text-base font-semibold text-piedra">{etiqueta}</p>
+    <Card as={to ? Link : 'div'} to={to} className="flex flex-col justify-between p-3 sm:p-4">
+      <p className="font-titulo text-3xl font-extrabold leading-none text-olla sm:text-4xl">{valor}</p>
+      <p className="mt-2 text-sm font-semibold leading-tight text-piedra sm:text-base">{etiqueta}</p>
     </Card>
   )
 }
@@ -45,16 +47,9 @@ export default function Inicio() {
         </p>
       </div>
 
-      {!ciudad.piloto && (
-        <Card className="flex items-start gap-3 border-[#B5D9E3] bg-[#E2F1F5]">
-          <Info size={22} className="mt-0.5 shrink-0 text-frio" aria-hidden="true" />
-          <p className="text-base">
-            <b>Así se vería en {ciudad.nombre}.</b> Lotes de muestra en {ciudad.moneda}, atendidos por la {ciudad.coordinador}. Los datos reales del piloto están en Barranquilla.
-          </p>
-        </Card>
-      )}
+      <AvisoPlaza />
 
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-3" aria-label="Resumen de hoy">
+      <section className="grid grid-cols-3 gap-2 sm:gap-3" aria-label="Resumen de hoy">
         {vende ? (
           <>
             <Cifra valor={misLotes.length} etiqueta="Tus lotes en vitrina" to="/ultima-hora" />
@@ -86,13 +81,25 @@ export default function Inicio() {
             <p className="mb-4 mt-1 text-base text-piedra">{encargos.length} encargos esperan tu precio. Respondes en 2 toques.</p>
             <Button to="/pedidos" variante="contorno" className="w-full">Ver pedidos</Button>
           </Card>
+          <Card>
+            <Pill tono="frio" icono={MapPin}>Cerca de ti</Pill>
+            <h2 className="mt-3 text-2xl">Mira quién pide cerca</h2>
+            <p className="mb-4 mt-1 text-base text-piedra">Restaurantes, juguerías y hogares con pedidos, en el mapa.</p>
+            <Button to="/mapa" variante="contorno" icono={MapPin} className="w-full">Ver mapa</Button>
+          </Card>
+          <Card>
+            <Pill tono="olla" icono={Store}>Puestos</Pill>
+            <h2 className="mt-3 text-2xl">Los puestos de la plaza</h2>
+            <p className="mb-4 mt-1 text-base text-piedra">Quién tiene nevera, quién no y qué lotes hay hoy.</p>
+            <Button to="/puestos" variante="contorno" icono={Store} className="w-full">Ver puestos</Button>
+          </Card>
         </div>
       ) : (
         <>
           <Card className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Pill tono="tomate" icono={Zap}>Última hora</Pill>
-              <span className="text-sm font-semibold text-piedra">{kilosSalvables} kg por rescatar hoy</span>
+              <span className="text-sm font-semibold text-piedra">{cant(kilosSalvables, 'kg')} por rescatar hoy</span>
             </div>
             <h2 className="text-2xl">Se acaba pronto</h2>
             <ul className="divide-y divide-borde">
@@ -120,8 +127,11 @@ export default function Inicio() {
             <Card>
               <Pill tono="frio" icono={MapPin}>Puestos</Pill>
               <h2 className="mt-3 text-2xl">Mira dónde están</h2>
-              <p className="mb-4 mt-1 text-base text-piedra">Los puestos de la plaza en el mapa.</p>
-              <Button to="/mapa" variante="contorno" className="w-full">Ver mapa</Button>
+              <p className="mb-4 mt-1 text-base text-piedra">Los puestos de la plaza, con y sin nevera.</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button to="/puestos" variante="contorno" icono={Store}>Puestos</Button>
+                <Button to="/mapa" variante="contorno" icono={MapPin}>Mapa</Button>
+              </div>
             </Card>
           </div>
         </>

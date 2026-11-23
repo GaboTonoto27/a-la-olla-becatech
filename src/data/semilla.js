@@ -70,6 +70,8 @@ function lotesDemo() {
     lote('bq', 'tomate-arbol', { ...MANA, producto: 'Tomate de árbol', cat: 'fruta', cantidad: 10, normal: 6200, rescate: 3700, motivo: 'Muy maduro', uso: 'Jugo', minutos: 175 }),
     lote('bq', 'lulo', { ...MANA, producto: 'Lulo', cat: 'fruta', cantidad: 5, normal: 8800, rescate: 5300, motivo: 'Machucado', uso: 'Jugo', minutos: 110 }),
     lote('bq', 'lechuga', { ...ANA, producto: 'Bolsita de lechuga', cat: 'hoja', unidad: 'bolsa', cantidad: 6, normal: 5000, rescate: 3000, motivo: 'Hojas maltratadas', uso: 'Guiso', minutos: 135 }),
+    lote('bq', 'chelo-mango', { vendedorId: 'chelo', puesto: 'Fruver Don Chelo', barrio: 'Ciudadela 20 de Julio', producto: 'Mango', cat: 'fruta', cantidad: 9, normal: 4500, rescate: 2600, motivo: 'Muy maduro', uso: 'Jugo', minutos: 130 }),
+    lote('bq', 'esquina-papaya', { vendedorId: 'esquina', puesto: 'Frutas La Esquina', barrio: 'Metropolitana', producto: 'Papaya', cat: 'fruta', cantidad: 7, normal: 3000, rescate: 1800, motivo: 'Machucado', uso: 'Jugo', formal: false, frio: false, minutos: 105 }),
     lote('bq', 'gallos', { ...ANA, producto: 'Verdura pasada', cat: 'verdura', unidad: 'bolsa', cantidad: 4, normal: 3000, rescate: 1000, motivo: 'Muy maduro', uso: 'Gallinas y abono', nivel: 'cria', minutos: 160 }),
 
     lote('bog', 'papa', { vendedorId: 'bog1', puesto: 'Fruver Paloquemao 14', barrio: 'Paloquemao', producto: 'Papa criolla', cat: 'verdura', cantidad: 18, normal: 3500, rescate: 2200, motivo: 'Machucado', uso: 'Sopa', minutos: 140 }),
@@ -104,6 +106,7 @@ function pedidosDemo(ahora) {
     base('bq', 'p2', { compradorId: null, comprador: 'Juguería Fresco Ya', producto: 'Maracuyá', kg: 8, hora: '7:00 a. m.', presupuestoKg: 5500, uso: 'Jugo', cocino: "Jugo pa' el día" }),
     base('bq', 'p3', { compradorId: null, comprador: 'Fritos Doña Nelly', producto: 'Plátano maduro', kg: 20, hora: '5:30 a. m.', presupuestoKg: 1000, uso: 'Fritos', cocino: 'Patacones y tajadas' }),
     base('bq', 'p4', { compradorId: 'mercedes', comprador: 'Mercedes (Hogar)', producto: 'Zanahoria', kg: 3, hora: '8:00 a. m.', presupuestoKg: 1000, uso: 'Sopa', cocino: "Sancocho pa' la familia" }),
+    base('bq', 'p5', { compradorId: null, comprador: 'Restaurante Nuevo Santander', producto: 'Zanahoria', kg: 10, hora: '6:00 a. m.', presupuestoKg: 1200, uso: 'Sopa', cocino: "Sopa pa' el almuerzo" }),
     base('bog', 'p1', { compradorId: null, comprador: 'Restaurante La Candelaria', producto: 'Papa criolla', kg: 10, hora: '6:00 a. m.', presupuestoKg: 2000, uso: 'Sopa', cocino: 'Ajiaco' }),
     base('med', 'p1', { compradorId: null, comprador: 'Corrientazo El Paisa', producto: 'Tomate chonto', kg: 12, hora: '6:30 a. m.', presupuestoKg: 2300, uso: 'Guiso', cocino: "Hogao pa' el almuerzo" }),
     base('mx', 'p1', { compradorId: null, comprador: 'Fonda Doña Chela', producto: 'Jitomate', kg: 15, hora: '6:00 a. m.', presupuestoKg: 17, uso: 'Guiso', cocino: "Salsa pa' la comida corrida" }),

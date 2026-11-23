@@ -3,8 +3,10 @@ import { guardar, leer, resetDemo as limpiarStore } from '../data/store.js'
 import { buscarUsuario } from '../data/seed.js'
 import { ciudadPorId } from '../data/ciudades.js'
 import * as reglas from '../lib/acciones.js'
+import { puestoPorId } from '../data/puestos.js'
 
 const AppContext = createContext(null)
+const modoVendedor = (m) => m === 'vendedor'
 
 export function AppProvider({ children }) {
   const [estado, setEstado] = useState(() => reglas.iniciar(leer()))
@@ -64,7 +66,34 @@ export function AppProvider({ children }) {
     [],
   )
 
+  // Estándares de un puesto: lo que el vendedor prendió hoy manda sobre lo de fábrica.
+  const estandaresDe = useCallback(
+    (vendedorId) => {
+      const base = puestoPorId(vendedorId)?.estandares ?? {}
+      const mios = estado.estandares[vendedorId] ?? {}
+      return { ...base, ...mios, texto: mios.texto ?? '', actualizado: mios.actualizado ?? null }
+    },
+    [estado.estandares],
+  )
+  const cambiarEstandar = useCallback(
+    (vendedorId, id, valor) =>
+      setEstado((e) => ({
+        ...e,
+        estandares: {
+          ...e.estandares,
+          [vendedorId]: { ...e.estandares[vendedorId], [id]: valor, ...(id === 'texto' ? {} : { actualizado: Date.now() }) },
+        },
+      })),
+    [],
+  )
+
+  // Un vendedor de Barranquilla no publica ni responde en las plazas de muestra.
+  const ventaBloqueada = Boolean(modoVendedor(estado.modo) && usuario?.ciudadBase && usuario.ciudadBase !== ciudad.id)
+
   const valor = {
+    estandaresDe,
+    cambiarEstandar,
+    ventaBloqueada,
     usuario,
     modo: estado.modo,
     ciudad,
@@ -82,6 +111,7 @@ export function AppProvider({ children }) {
     cambiarSinCelular,
     publicarLote: (d) => aplicar(reglas.publicarLote, usuario, ciudad, d),
     retirarLote: (id) => aplicar(reglas.retirarLote, id),
+    ajustarPrecio: (id, nuevo) => aplicar(reglas.ajustarPrecio, id, nuevo),
     apartar: (loteId, cantidad) => aplicar(reglas.apartar, usuario, loteId, cantidad),
     actualizarApartado: (id, nuevo) => aplicar(reglas.actualizarApartado, id, nuevo),
     crearPedido: (d) => aplicar(reglas.crearPedido, usuario, ciudad.id, d),

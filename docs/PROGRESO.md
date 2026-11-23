@@ -1,7 +1,8 @@
-# Progreso — Bloque 2 listo (falta tu revisión en el navegador)
-- Pacto compacto (cabe en 720 px, "Jamás" visible) con línea de etiqueta Cría / Abono. Selector de plaza en la barra superior: Barranquilla · Piloto Activo, Bogotá, Medellín, CDMX (moneda y lotes demo por plaza).
-- `/ultima-hora`: catálogo con fotos reales (Barranquilla) o ícono (otras plazas), precio tachado, reloj/barra, filtros por categoría y Cocina/Cría. Apartar gratis genera código `OLLA-###`, descuenta stock en localStorage; comprador revisa y se lleva o rechaza.
-- `/pedidos`: comprador encarga (qué, kilos, hora, presupuesto); vendedor responde en 2 toques y comprador elige oferta.
-- Vendedor: publicar en 3 pasos + etiqueta rápida, Modo Sin Celular (aviso al comprador), apartados con perfil del comprador, retirar lotes. Inicio con cifras vivas por rol.
-- Datos: `store.js` v2, `semilla.js`, `lib/acciones.js` (reglas puras). Lotes demo se renuevan al abrir; los vencidos se ocultan solos. `npm run build` OK (JS inicial 93 KB gz). Sin Playwright aún.
-- Sigue: Bloque 3 (estándares dinámicos, puestos, mapa Leaflet).
+# Progreso — Bloque 3 listo (falta tu revisión en el navegador)
+- Ajustes B2: calculadora de precio (+40/+20/−20/−40 o monto libre) al publicar; "Ajustar precio" (−10/−20/−30 o libre) en tus lotes; cintillo de plaza independiente y venta bloqueada pa' Edwin/Ana fuera de Barranquilla; moneda COP/MXN visible; Inicio en 3 columnas; plurales (1 bolsa/6 bolsas); foco suave del selector.
+- Estándares: `data/estandares.js`, sellos únicos (`Sellos.jsx`: azul solo nevera, "Sin nevera · Al ambiente"), modal "¿Cómo funcionan los estándares?" en `/ultima-hora`, `/puestos` y `/mapa`. El vendedor prende/apaga los suyos en su perfil (1 toque, con hora).
+- `/puestos` (Todos, Con nevera, Sin nevera, Con lotes hoy, Pa' Cría/Abono) y `/puesto/:id` (fotos reales, horario, pagos, lotes pa' apartar, Ver en el mapa, Cómo llegar si la ubicación está desbloqueada).
+- `/mapa` (Leaflet directo + OSM, lazy): Compro = puestos con/sin nevera; Vendo = pedidos cercanos + "Tu puesto" + Responder pedido. GPS real con Haversine, aviso a más de 20 km, falla con gracia. Zona aproximada (`L.circle`) pa' Ana, Nuevo Santander, Doña Nelly y Mercedes hasta apartar/confirmar.
+- Datos: store v3 (la demo se reinicia una vez), +2 fruvers de muestra en BQ y pedido de Nuevo Santander. Escritorio suma Puestos; móvil sigue en 4 pestañas.
+- `npm run build` OK: JS inicial 95,8 KB gz; chunk del mapa 48,8 KB gz (solo carga en `/mapa`). Playwright: login Edwin, `/mapa` en Compro (5 pines, 2 zonas) y Vendo (6 pines, 3 zonas), `/puestos`, `/puesto/edwin`, sin errores de consola. GPS real no probado.
+- Sigue: Bloque 4 (chat, reseñas, ayudante, PDF, admin).

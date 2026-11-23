@@ -2,11 +2,12 @@ import { Link, NavLink } from 'react-router-dom'
 import { ChefHat, Store } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import Toggle from '../ui/Toggle.jsx'
-import SelectorCiudad from './SelectorCiudad.jsx'
+import ZonaBar from './ZonaBar.jsx'
+import Punto from '../ui/Punto.jsx'
 import { pestanasPara } from './navegacion.js'
 
 export default function Header() {
-  const { usuario, modo, toggleModo } = useApp()
+  const { usuario, modo, toggleModo, avisos } = useApp()
   const esAdmin = usuario?.rol === 'admin'
   const esVendedor = modo === 'vendedor'
 
@@ -31,6 +32,8 @@ export default function Header() {
                 }
               >
                 {etiqueta}
+                {to === '/ultima-hora' && avisos.ultima && <Punto className="ml-1.5" texto="Tienes apartados por atender" />}
+                {to === '/pedidos' && avisos.pedidos && <Punto className="ml-1.5" texto="Te respondieron un pedido" />}
               </NavLink>
             ))}
           </nav>
@@ -56,7 +59,7 @@ export default function Header() {
           </div>
         )}
       </div>
-      {!esAdmin && <SelectorCiudad />}
+      {!esAdmin && <ZonaBar />}
     </header>
   )
 }

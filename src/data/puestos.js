@@ -10,19 +10,19 @@ export const PUESTOS = [
   // Barranquilla — piloto real
   {
     id: 'edwin', ciudad: 'bq', tipo: 'puesto', nombre: 'Fruver LMC', barrio: 'Ciudadela 20 de Julio',
-    direccion: 'Cra. 6 Sur #47-14', coord: [10.9268, -74.8052], privacidad: 'exacto', formal: true,
+    direccion: 'Cra. 6 Sur #47-14', coord: [10.9291009, -74.8055565], privacidad: 'exacto', formal: true,
     fotos: ['/fotos/puesto-lmc.jpg', '/fotos/lmc-neveras.jpg'], horario: HORARIO,
     pagos: [PAGO_EFECTIVO, 'Nequi (opcional)'], estandares: E(true, true, true, true, false, true),
   },
   {
     id: 'ana', ciudad: 'bq', tipo: 'puesto', nombre: 'Puesto Ana', barrio: 'Metrocentro',
-    direccion: 'Cra. 1A con Cll 45A, frente a Metrocentro', coord: [10.9301, -74.8031], privacidad: 'zona', formal: false,
+    direccion: 'Cra. 1A con Cll 45A, frente a Metrocentro', coord: [10.9303258, -74.8003184], privacidad: 'zona', formal: false,
     fotos: ['/fotos/puesto-metrocentro.jpg'], horario: HORARIO_CORTO,
     pagos: [PAGO_EFECTIVO], estandares: E(false, true, false, true, false, false),
   },
   {
     id: 'mana', ciudad: 'bq', tipo: 'puesto', nombre: 'Fruvers El Maná', barrio: 'La 49',
-    direccion: 'Cll 49 (La 49)', coord: [10.9246, -74.8068], privacidad: 'exacto', formal: true,
+    direccion: 'Cll 49 (La 49)', coord: [10.9238953, -74.8118909], privacidad: 'exacto', formal: true,
     fotos: [], horario: 'Lun–Sáb 5:30 a. m. – 4:00 p. m.', pagos: [PAGO_EFECTIVO, 'Nequi (opcional)'],
     estandares: E(true, true, true, false, true, true),
   },
@@ -37,8 +37,8 @@ export const PUESTOS = [
     fotos: [], horario: 'Lun–Sáb 6:00 a. m. – 2:00 p. m.', pagos: [PAGO_EFECTIVO], estandares: E(false, false, true, true, false, false),
   },
   // Compradores de la zona (pedidos pa' la olla)
-  { id: 'wilmary', ciudad: 'bq', tipo: 'comprador', nombre: 'Corrientazo El Punto Clave', pedidoComo: 'El Punto Clave', barrio: 'Metrocentro', direccion: 'Cra. 1A #45H-64', coord: [10.9312, -74.8024], privacidad: 'exacto', oficio: 'Corrientazo' },
-  { id: 'nsantander', ciudad: 'bq', tipo: 'comprador', nombre: 'Restaurante Nuevo Santander', pedidoComo: 'Restaurante Nuevo Santander', barrio: 'Ciudadela 20 de Julio', direccion: 'Cra. 6 Sur', coord: [10.9279, -74.8076], privacidad: 'zona', oficio: 'Restaurante' },
+  { id: 'wilmary', ciudad: 'bq', tipo: 'comprador', nombre: 'Corrientazo El Punto Clave', pedidoComo: 'El Punto Clave', barrio: 'Metrocentro', direccion: 'Cra. 1A #45H-64', coord: [10.9305172, -74.8021784], privacidad: 'exacto', oficio: 'Corrientazo' },
+  { id: 'nsantander', ciudad: 'bq', tipo: 'comprador', nombre: 'Restaurante Nuevo Santander', pedidoComo: 'Restaurante Nuevo Santander', barrio: 'Ciudadela 20 de Julio', direccion: 'Cra. 6 Sur', coord: [10.9302358, -74.8039290], privacidad: 'zona', oficio: 'Restaurante' },
   { id: 'fresco', ciudad: 'bq', tipo: 'comprador', nombre: 'Juguería Fresco Ya', pedidoComo: 'Juguería Fresco Ya', barrio: 'Metropolitana', direccion: 'Cll 47 con Cra. 3', coord: [10.9256, -74.8009], privacidad: 'exacto', oficio: 'Juguería' },
   { id: 'nelly', ciudad: 'bq', tipo: 'comprador', nombre: 'Fritos Doña Nelly', pedidoComo: 'Fritos Doña Nelly', barrio: 'Metropolitana', direccion: 'Cra. 2 con Cll 48', coord: [10.9262, -74.8037], privacidad: 'zona', oficio: 'Fritos' },
   { id: 'mercedes', ciudad: 'bq', tipo: 'comprador', nombre: 'Hogar de Mercedes', pedidoComo: 'Mercedes (Hogar)', barrio: 'Ciudadela 20 de Julio', direccion: 'Cll 46 con Cra. 5', coord: [10.9293, -74.8062], privacidad: 'zona', oficio: 'Hogar' },
@@ -55,9 +55,13 @@ export const PUESTOS = [
   { id: 'mxp', ciudad: 'mx', tipo: 'comprador', nombre: 'Fonda Doña Chela', pedidoComo: 'Fonda Doña Chela', barrio: 'Central de Abasto', direccion: 'Calle 4', coord: [19.3749, -99.0889], privacidad: 'exacto', oficio: 'Fonda' },
 ]
 
-export const puestoPorId = (id) => PUESTOS.find((p) => p.id === id) ?? null
-export const puestosDe = (ciudadId) => PUESTOS.filter((p) => p.ciudad === ciudadId && p.tipo === 'puesto')
-export const compradoresDe = (ciudadId) => PUESTOS.filter((p) => p.ciudad === ciudadId && p.tipo === 'comprador')
+// Puestos de fábrica + los que crea la gente al registrarse, con lo que cada vendedor editó en su cuenta.
+export function listaPuestos(extras = [], overrides = {}) {
+  return [...PUESTOS, ...extras].map((p) => {
+    const mezcla = overrides[p.id] ? { ...p, ...overrides[p.id] } : p
+    return mezcla.tipo === 'puesto' ? { ...mezcla, plan: mezcla.plan ?? (mezcla.formal ? 'formal' : 'popular') } : mezcla
+  })
+}
 
 // Centro del círculo de zona aproximada: se corre unos metros pa' que no delate el punto exacto.
 export const RADIO_ZONA = 220

@@ -1,12 +1,21 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { guardar, leer, resetDemo as limpiarStore } from '../data/store.js'
-import { buscarUsuario } from '../data/seed.js'
 import { ciudadPorId } from '../data/ciudades.js'
 import * as reglas from '../lib/acciones.js'
-import { puestoPorId } from '../data/puestos.js'
+import * as social from '../lib/social.js'
+import { listaPuestos } from '../data/puestos.js'
 
 const AppContext = createContext(null)
-const modoVendedor = (m) => m === 'vendedor'
+
+// Respuestas de mentiras piadosas pa' que el jurado vea el chat vivo cuando el otro lado es una cuenta de muestra.
+function respuestaDemo(texto) {
+  const t = texto.toLowerCase()
+  if (t.includes('15 min') || t.includes('guard')) return "Listo, te lo guardo 15 minutos. Pasa con tu código."
+  if (t.includes('saliendo') || t.includes('camino')) return 'Dale, te espero. Lo tengo apartado aparte.'
+  if (t.includes('llegu')) return 'Ya te atiendo, un momento.'
+  if (t.includes('recoger') || t.includes('listo')) return "Perfecto, aquí lo tienes listo pa' revisar."
+  return 'Recibido. Te confirmo en un momento.'
+}
 
 export function AppProvider({ children }) {
   const [estado, setEstado] = useState(() => reglas.iniciar(leer()))
@@ -26,28 +35,46 @@ export function AppProvider({ children }) {
     return () => clearInterval(id)
   }, [])
 
-  const usuario = useMemo(() => buscarUsuario(estado.usuarioId), [estado.usuarioId])
-  const ciudad = ciudadPorId(estado.ciudadId)
+  const cuentas = estado.cuentas
+  const cuentaPorId = useCallback((id) => cuentas.find((c) => c.id === id) ?? null, [cuentas])
+
+  // Quien está dentro. Si el Admin lo suspende o expulsa, la sesión se cierra sola.
+  const usuario = useMemo(() => {
+    const c = cuentas.find((x) => x.id === estado.usuarioId) ?? null
+    return c && !social.bloqueada(c) ? c : null
+  }, [cuentas, estado.usuarioId])
+
+  const ciudad = ciudadPorId('bq')
   const pactoAceptado = Boolean(usuario && estado.pactos[usuario.id])
+  const modo = usuario?.rol === 'comprador' ? 'comprador' : usuario?.rol === 'vendedor' ? 'vendedor' : estado.modo
 
-  const entrar = useCallback((id) => {
-    const u = buscarUsuario(id)
-    if (u) setEstado((e) => ({ ...e, usuarioId: u.id, modo: u.modoInicial }))
+  // Puestos visibles: los de fábrica + los que creó la gente, sin los de cuentas suspendidas o expulsadas.
+  const puestos = useMemo(
+    () =>
+      listaPuestos(estado.puestosExtra, estado.puestoOverrides).filter((p) => !social.bloqueada(cuentas.find((c) => c.id === p.id))),
+    [estado.puestosExtra, estado.puestoOverrides, cuentas],
+  )
+  const puestoPorId = useCallback((id) => puestos.find((p) => p.id === id) ?? null, [puestos])
+  const puestosDe = useCallback((ciudadId) => puestos.filter((p) => p.ciudad === ciudadId && p.tipo === 'puesto'), [puestos])
+  const compradoresDe = useCallback((ciudadId) => puestos.filter((p) => p.ciudad === ciudadId && p.tipo === 'comprador'), [puestos])
+  const miPuesto = usuario ? puestos.find((p) => p.id === usuario.id && p.tipo === 'puesto') ?? null : null
+
+  // Lotes en vitrina: no se ven los de cuentas suspendidas o expulsadas.
+  const lotes = useMemo(
+    () => estado.lotes.filter((l) => !social.bloqueada(cuentas.find((c) => c.id === l.vendedorId))),
+    [estado.lotes, cuentas],
+  )
+
+  // Aviso del navegador pa' el Admin, solo si él mismo lo activó.
+  const avisarAdmin = useCallback((titulo, cuerpo) => {
+    try {
+      if (ref.current.pushAdmin && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(titulo, { body: cuerpo })
+      }
+    } catch {
+      /* el navegador no deja avisar: no pasa nada */
+    }
   }, [])
-
-  const salir = useCallback(() => setEstado((e) => ({ ...e, usuarioId: null, modo: null })), [])
-
-  const aceptarPacto = useCallback(() => {
-    setEstado((e) => (e.usuarioId ? { ...e, pactos: { ...e.pactos, [e.usuarioId]: true } } : e))
-  }, [])
-
-  const toggleModo = useCallback(() => {
-    setEstado((e) => ({ ...e, modo: e.modo === 'vendedor' ? 'comprador' : 'vendedor' }))
-  }, [])
-
-  const reiniciarDemo = useCallback(() => setEstado(reglas.iniciar(limpiarStore())), [])
-
-  const cambiarCiudad = useCallback((ciudadId) => setEstado((e) => ({ ...e, ciudadId })), [])
 
   // Aplica una regla pura al estado actual y devuelve su resultado (ej. el apartado con su código).
   const aplicar = useCallback((fn, ...args) => {
@@ -57,9 +84,60 @@ export function AppProvider({ children }) {
     return resultado
   }, [])
 
+  const entrarCon = useCallback((cuenta) => {
+    setEstado((e) => ({ ...e, usuarioId: cuenta.id, modo: cuenta.modoInicial }))
+  }, [])
+
+  const iniciarSesion = useCallback(
+    (ident, clave) => {
+      const r = social.validarLogin(ref.current.cuentas, ident, clave)
+      if (r.ok) entrarCon(r.cuenta)
+      return r
+    },
+    [entrarCon],
+  )
+
+  const registrar = useCallback(
+    (datos) => {
+      const r = aplicar(social.crearCuenta, { proveedor: 'clave', ...datos })
+      if (r.ok) entrarCon(r.cuenta)
+      return r
+    },
+    [aplicar, entrarCon],
+  )
+
+  // Google y Facebook simulados: la persona confirma sus datos y entra con su propio perfil.
+  const entrarSimulado = useCallback(
+    ({ proveedor, nombre, correo, rol }) => {
+      const existe = ref.current.cuentas.find((c) => social.normalizarCorreo(c.correo) === social.normalizarCorreo(correo))
+      if (existe) {
+        const r = social.estadoEntrada(existe)
+        if (r.ok) entrarCon(existe)
+        return r
+      }
+      const vendedor = rol === 'vendedor' || rol === 'ambos'
+      const r = aplicar(social.crearCuenta, {
+        proveedor, nombre, correo, rol, perfilComprador: 'hogar',
+        puesto: vendedor ? { nombre: `Puesto de ${nombre.trim().split(' ')[0]}`, formal: false, plan: 'popular', zona: true, nequi: false, sinCelular: false } : null,
+      })
+      if (r.ok) entrarCon(r.cuenta)
+      return r
+    },
+    [aplicar, entrarCon],
+  )
+
+  const salir = useCallback(() => setEstado((e) => ({ ...e, usuarioId: null, modo: null })), [])
+  const aceptarPacto = useCallback(() => {
+    setEstado((e) => (e.usuarioId ? { ...e, pactos: { ...e.pactos, [e.usuarioId]: true } } : e))
+  }, [])
+  const toggleModo = useCallback(() => {
+    setEstado((e) => ({ ...e, modo: e.modo === 'vendedor' ? 'comprador' : 'vendedor' }))
+  }, [])
+  const reiniciarDemo = useCallback(() => setEstado(reglas.iniciar(limpiarStore())), [])
+
   const sinCelular = useCallback(
-    (vendedorId) => estado.sinCelular[vendedorId] ?? buscarUsuario(vendedorId)?.sinCelular ?? false,
-    [estado.sinCelular],
+    (vendedorId) => estado.sinCelular[vendedorId] ?? cuentas.find((c) => c.id === vendedorId)?.sinCelular ?? false,
+    [estado.sinCelular, cuentas],
   )
   const cambiarSinCelular = useCallback(
     (vendedorId, valor) => setEstado((e) => ({ ...e, sinCelular: { ...e.sinCelular, [vendedorId]: valor } })),
@@ -69,11 +147,11 @@ export function AppProvider({ children }) {
   // Estándares de un puesto: lo que el vendedor prendió hoy manda sobre lo de fábrica.
   const estandaresDe = useCallback(
     (vendedorId) => {
-      const base = puestoPorId(vendedorId)?.estandares ?? {}
+      const base = puestos.find((p) => p.id === vendedorId)?.estandares ?? {}
       const mios = estado.estandares[vendedorId] ?? {}
       return { ...base, ...mios, texto: mios.texto ?? '', actualizado: mios.actualizado ?? null }
     },
-    [estado.estandares],
+    [estado.estandares, puestos],
   )
   const cambiarEstandar = useCallback(
     (vendedorId, id, valor) =>
@@ -87,37 +165,145 @@ export function AppProvider({ children }) {
     [],
   )
 
-  // Un vendedor de Barranquilla no publica ni responde en las plazas de muestra.
-  const ventaBloqueada = Boolean(modoVendedor(estado.modo) && usuario?.ciudadBase && usuario.ciudadBase !== ciudad.id)
+  // ---- Chat ----
+  const enviarMensaje = useCallback(
+    (chatId, texto) => {
+      const yo = ref.current.usuarioId
+      const c = ref.current.cuentas.find((x) => x.id === yo)
+      const r = aplicar(social.enviarMensaje, chatId, yo, social.nombreVisible(c), texto)
+      if (r.ok) {
+        const chat = ref.current.chats.find((x) => x.id === chatId)
+        const otro = yo === chat.compradorId ? chat.vendedorId : chat.compradorId
+        const cuentaOtro = ref.current.cuentas.find((x) => x.id === otro)
+        if (!cuentaOtro || cuentaOtro.demo) {
+          setTimeout(() => {
+            const vivo = ref.current.chats.find((x) => x.id === chatId)
+            if (!vivo || vivo.bloqueadoPor) return
+            const msg = { id: `m-r${Date.now()}`, de: otro, texto: respuestaDemo(texto), t: Date.now() }
+            const nuevo = { ...ref.current, chats: ref.current.chats.map((x) => (x.id === chatId ? { ...x, mensajes: [...x.mensajes, msg] } : x)) }
+            ref.current = nuevo
+            setEstado(nuevo)
+          }, 1800)
+        }
+      }
+      return r
+    },
+    [aplicar, avisarAdmin],
+  )
+
+  const denunciar = useCallback(
+    (d) => {
+      const den = aplicar(social.crearDenuncia, d)
+      avisarAdmin('A la Olla · Denuncia nueva', `${den.asunto} (gravedad ${den.gravedad})`)
+      return den
+    },
+    [aplicar, avisarAdmin],
+  )
+
+  const crearResena = useCallback(
+    (d) => {
+      const r = aplicar(social.crearResena, ref.current.cuentas.find((c) => c.id === ref.current.usuarioId), d)
+      if (r?.marcada) avisarAdmin('A la Olla · Comentario marcado', 'Una reseña tiene lenguaje ofensivo.')
+      return r
+    },
+    [aplicar, avisarAdmin],
+  )
+
+  const crearTicket = useCallback(
+    (d) => {
+      const t = aplicar(social.crearTicket, { autorId: ref.current.usuarioId, autorNombre: social.nombreVisible(cuentas.find((c) => c.id === ref.current.usuarioId)), ...d })
+      avisarAdmin('A la Olla · Ticket de soporte', t.asunto)
+      return t
+    },
+    [aplicar, avisarAdmin, cuentas],
+  )
+
+  // ---- Avisos (punto terracota) ----
+  const avisos = useMemo(() => {
+    if (!usuario || usuario.rol === 'admin') return { chat: 0, ultima: false, pedidos: false }
+    const apartadosPorAtender = estado.apartados.some((a) => a.vendedorId === usuario.id && a.estado === 'apartado')
+    const ofertasNuevas = estado.pedidos.some((p) => p.compradorId === usuario.id && p.estado === 'abierto' && p.ofertas.length > 0)
+    const vende = modo === 'vendedor'
+    return {
+      chat: social.chatsSinLeer(estado, usuario.id),
+      ultima: vende && apartadosPorAtender,
+      pedidos: !vende && ofertasNuevas,
+    }
+  }, [estado, usuario, modo])
+
+  const sinLeerAdmin = usuario?.rol === 'admin' ? social.sinLeerAdmin(estado) : 0
 
   const valor = {
+    cuentas,
+    cuentaPorId,
     estandaresDe,
     cambiarEstandar,
-    ventaBloqueada,
+    ventaBloqueada: false,
     usuario,
-    modo: estado.modo,
+    miPuesto,
+    modo,
     ciudad,
     pactoAceptado,
-    lotes: estado.lotes,
+    lotes,
     apartados: estado.apartados,
     pedidos: estado.pedidos,
-    entrar,
+    chats: estado.chats,
+    resenas: estado.resenas,
+    denuncias: estado.denuncias,
+    tickets: estado.tickets,
+    marcados: estado.marcados,
+    alertasCorreo: estado.alertasCorreo,
+    plazas: estado.plazas,
+    adminCorreo: estado.adminCorreo,
+    pushAdmin: estado.pushAdmin,
+    avisos,
+    sinLeerAdmin,
+    puestos,
+    puestoPorId,
+    puestosDe,
+    compradoresDe,
+    iniciarSesion,
+    registrar,
+    entrarSimulado,
     salir,
     aceptarPacto,
     toggleModo,
     reiniciarDemo,
-    cambiarCiudad,
     sinCelular,
     cambiarSinCelular,
-    publicarLote: (d) => aplicar(reglas.publicarLote, usuario, ciudad, d),
+    editarPuesto: (id, cambios) => aplicar(social.editarPuesto, id, cambios),
+    publicarLote: (d) => aplicar(reglas.publicarLote, usuario, ciudad, d, miPuesto),
     retirarLote: (id) => aplicar(reglas.retirarLote, id),
     ajustarPrecio: (id, nuevo) => aplicar(reglas.ajustarPrecio, id, nuevo),
     apartar: (loteId, cantidad) => aplicar(reglas.apartar, usuario, loteId, cantidad),
     actualizarApartado: (id, nuevo) => aplicar(reglas.actualizarApartado, id, nuevo),
     crearPedido: (d) => aplicar(reglas.crearPedido, usuario, ciudad.id, d),
-    responderPedido: (id, precioKg, acepta) => aplicar(reglas.responderPedido, id, usuario, precioKg, acepta),
+    responderPedido: (id, precioKg, acepta) => aplicar(reglas.responderPedido, id, usuario, precioKg, acepta, miPuesto?.nombre),
     elegirOferta: (pedidoId, ofertaId) => aplicar(reglas.elegirOferta, pedidoId, ofertaId),
     cerrarPedido: (id) => aplicar(reglas.cerrarPedido, id),
+    abrirChat: (d) => aplicar(social.abrirChat, d),
+    enviarMensaje,
+    marcarLeido: (chatId) => aplicar(social.marcarLeido, chatId, ref.current.usuarioId),
+    silenciarChat: (chatId) => aplicar(social.silenciarChat, chatId, ref.current.usuarioId),
+    bloquearChat: (chatId) => aplicar(social.bloquearChat, chatId, ref.current.usuarioId),
+    denunciar,
+    crearResena,
+    crearTicket,
+    // Panel del Admin
+    aplicarMedida: (id, medida) => aplicar(social.aplicarMedida, id, medida),
+    guardarNotas: (id, notas) => aplicar(social.guardarNotas, id, notas),
+    reactivarCuenta: (id) => aplicar(social.reactivarCuenta, id),
+    revisarMarcado: (id) => aplicar(social.revisarMarcado, id),
+    atenderTicket: (id) => aplicar(social.atenderTicket, id),
+    agregarPlaza: (d) => aplicar(social.agregarPlaza, d),
+    marcarTodoLeido: () => aplicar(social.marcarTodoLeido),
+    cambiarAdminCorreo: (correo) => setEstado((e) => ({ ...e, adminCorreo: correo })),
+    activarPush: async () => {
+      if (!('Notification' in window)) return 'no-disponible'
+      const permiso = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission()
+      setEstado((e) => ({ ...e, pushAdmin: permiso === 'granted' }))
+      return permiso
+    },
   }
   return <AppContext.Provider value={valor}>{children}</AppContext.Provider>
 }

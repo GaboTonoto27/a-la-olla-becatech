@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Banknote, Clock, Map, MapPin, Navigation } from 'lucide-react'
+import { ArrowLeft, Banknote, Clock, Flag, Map, MapPin, Navigation, ShieldAlert, Star } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useAhora } from '../lib/useAhora.js'
 import { loteActivo } from '../lib/acciones.js'
-import { puestoPorId } from '../data/puestos.js'
 import { ESTANDARES } from '../data/estandares.js'
 import { ubicacionExacta } from '../lib/ubicacion.js'
 import { urlGoogleMaps, urlWaze } from '../lib/geo.js'
@@ -16,6 +15,10 @@ import AvisoPlaza from '../components/layout/AvisoPlaza.jsx'
 import LoteCard from '../components/lotes/LoteCard.jsx'
 import ApartarModal from '../components/lotes/ApartarModal.jsx'
 import FotoPuesto from '../components/puestos/FotoPuesto.jsx'
+import BotonChat from '../components/chat/BotonChat.jsx'
+import DenunciarModal from '../components/DenunciarModal.jsx'
+import ListaResenas from '../components/resenas/ListaResenas.jsx'
+import { promedioPuesto } from '../lib/social.js'
 import Sellos from '../components/puestos/Sellos.jsx'
 import ComoFuncionanEstandares from '../components/puestos/ComoFuncionanEstandares.jsx'
 
@@ -60,9 +63,10 @@ function MiPuesto({ id }) {
 
 export default function PerfilPuesto() {
   const { id } = useParams()
-  const { usuario, modo, lotes, apartados, pedidos } = useApp()
+  const { usuario, modo, lotes, apartados, pedidos, puestoPorId, resenas } = useApp()
   const ahora = useAhora(30000)
   const [elegido, setElegido] = useState(null)
+  const [denunciando, setDenunciando] = useState(false)
   const puesto = puestoPorId(id)
 
   if (!puesto || puesto.tipo !== 'puesto') {
@@ -77,6 +81,8 @@ export default function PerfilPuesto() {
   const exacta = ubicacionExacta(puesto, usuario, apartados, pedidos)
   const suyos = lotes.filter((l) => l.vendedorId === puesto.id && loteActivo(l, ahora) && l.cantidad > 0)
   const esMio = usuario.id === puesto.id && modo === 'vendedor'
+  const delPuesto = resenas.filter((r) => r.puestoId === puesto.id)
+  const nota = promedioPuesto(resenas, puesto.id)
 
   return (
     <div className="space-y-5">
@@ -99,7 +105,7 @@ export default function PerfilPuesto() {
           <ul className="space-y-2 text-base">
             <li className="flex gap-2">
               <MapPin size={20} className="mt-0.5 shrink-0 text-olla" aria-hidden="true" />
-              {exacta ? puesto.direccion : `Barrio ${puesto.barrio}. La dirección exacta se desbloquea al apartar.`}
+              {exacta ? puesto.direccion || 'Ubicación marcada en el mapa' : `Barrio ${puesto.barrio}. La dirección exacta se desbloquea al apartar.`}
             </li>
             <li className="flex gap-2">
               <Clock size={20} className="mt-0.5 shrink-0 text-olla" aria-hidden="true" /> {puesto.horario}
@@ -114,12 +120,23 @@ export default function PerfilPuesto() {
             <Button to={`/mapa?puesto=${puesto.id}`} icono={Map}>Ver en el mapa</Button>
             <ComoFuncionanEstandares />
           </div>
-          {exacta && (
-            <div className="grid grid-cols-2 gap-2">
+          {exacta ? (
+            <div className="grid gap-2 sm:grid-cols-2">
               <a className={ENLACE} href={urlGoogleMaps(puesto.coord)} target="_blank" rel="noreferrer">
-                <Navigation size={20} aria-hidden="true" /> Cómo llegar
+                <Navigation size={20} aria-hidden="true" /> Cómo llegar (Google Maps)
               </a>
               <a className={ENLACE} href={urlWaze(puesto.coord)} target="_blank" rel="noreferrer">Abrir en Waze</a>
+            </div>
+          ) : (
+            <p className="flex items-start gap-2 rounded-xl border border-[#EBCFA6] bg-[#FBEFDD] p-3 text-base font-semibold">
+              <ShieldAlert size={20} className="mt-0.5 shrink-0 text-ambar" aria-hidden="true" />
+              Por seguridad, la ruta se activa cuando apartas un lote y tienes tu código OLLA.
+            </p>
+          )}
+          {usuario.id !== puesto.id && modo === 'comprador' && (
+            <div className="grid gap-2 sm:grid-cols-2">
+              <BotonChat vendedorId={puesto.id} compradorId={usuario.id} contexto={`Puesto ${puesto.nombre}`}>Escribir al puesto</BotonChat>
+              <Button variante="suave" icono={Flag} onClick={() => setDenunciando(true)}>Denunciar este sitio</Button>
             </div>
           )}
         </div>
@@ -141,6 +158,22 @@ export default function PerfilPuesto() {
           </div>
         )}
       </section>
+
+      <section className="space-y-3" aria-label="Reseñas">
+        <h2 className="flex flex-wrap items-center gap-2 text-2xl">
+          Reseñas verificadas
+          {nota && (
+            <span className="flex items-center gap-1.5 text-base font-bold text-carbon">
+              <Star size={18} className="fill-ambar text-ambar" aria-hidden="true" /> {String(nota.promedio).replace('.', ',')} ({nota.total})
+            </span>
+          )}
+        </h2>
+        <ListaResenas resenas={delPuesto} />
+      </section>
+
+      {denunciando && (
+        <DenunciarModal titulo="Denunciar este sitio" tipo="sitio" objetivo={{ id: puesto.id, nombre: puesto.nombre }} onCerrar={() => setDenunciando(false)} />
+      )}
 
       {elegido && <ApartarModal key={elegido.id} lote={elegido} onCerrar={() => setElegido(null)} />}
     </div>

@@ -22,7 +22,7 @@ function Cifra({ valor, etiqueta, to }) {
 }
 
 export default function Inicio() {
-  const { usuario, modo, ciudad, lotes, apartados, pedidos } = useApp()
+  const { usuario, modo, ciudad, lotes, apartados, pedidos, miPuesto } = useApp()
   const ahora = useAhora(30000)
   const vende = modo === 'vendedor'
 
@@ -35,6 +35,7 @@ export default function Inicio() {
   const misApartados = apartados.filter(
     (a) => a.ciudad === ciudad.id && a.comprador.id === usuario.id && (a.estado === 'apartado' || a.estado === 'confirmado'),
   )
+  const misEncargos = pedidos.filter((p) => p.compradorId === usuario.id && p.estado !== 'cerrado').length
   const kilosSalvables = delaPlaza.reduce((s, l) => s + (l.unidad === 'kg' ? l.cantidad : 0), 0)
   const pronto = [...delaPlaza].sort((a, b) => a.vence - b.vence).slice(0, 3)
 
@@ -43,7 +44,7 @@ export default function Inicio() {
       <div>
         <h1 className="text-3xl text-carbon sm:text-4xl">Buenas, {usuario.nombre}</h1>
         <p className="mt-1 text-lg text-piedra">
-          {vende ? `Tu puesto: ${usuario.negocio}` : '¿Qué vas a cocinar hoy?'} · {ciudad.plaza}
+          {vende ? `Tu puesto: ${miPuesto?.nombre ?? usuario.negocio}` : '¿Qué vas a cocinar hoy?'} · {ciudad.plaza}
         </p>
       </div>
 
@@ -67,11 +68,24 @@ export default function Inicio() {
 
       {vende && <SinCelularCard />}
 
+      {!vende && misApartados.length === 0 && misEncargos === 0 && (
+        <Card className="space-y-3 border-[#BCD8C5] bg-[#F4F9F5]">
+          <h2 className="text-2xl">Tu primera olla, paso a paso</h2>
+          <p className="text-base text-piedra">
+            Aún no tienes apartados ni encargos. Mira lo que hay hoy en {ciudad.plaza} y aparta gratis, o cuéntanos qué vas a cocinar y los puestos te responden con su precio.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button to="/ultima-hora" variante="acento" icono={Zap}>Ver lo que hay hoy</Button>
+            <Button to="/pedidos" variante="contorno" icono={ShoppingBasket}>Pedir pa' mi olla</Button>
+          </div>
+        </Card>
+      )}
+
       {vende ? (
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <Pill tono="tomate" icono={Zap}>Última hora</Pill>
-            <h2 className="mt-3 text-2xl">Publica lo que te sobra</h2>
+            <h2 className="mt-3 text-2xl">{misLotes.length === 0 ? 'Publica tu primer lote' : 'Publica lo que te sobra'}</h2>
             <p className="mb-4 mt-1 text-base text-piedra">En 3 pasos: qué es, cuántos kilos y el precio.</p>
             <Button to="/ultima-hora" icono={Zap} variante="acento" className="w-full">Publicar sobrantes</Button>
           </Card>

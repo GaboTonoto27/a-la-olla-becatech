@@ -156,7 +156,10 @@ function Vendedor({ ahora }) {
       <section className="space-y-3" aria-label="Tus lotes">
         <h2 className="text-2xl">Tus lotes en vitrina</h2>
         {mios.length === 0 ? (
-          <p className="text-base text-piedra">No tienes lotes publicados ahora.</p>
+          <Card className="space-y-1 border-[#BCD8C5] bg-[#F4F9F5]">
+            <p className="text-xl font-bold">Publica tu primer lote</p>
+            <p className="text-base text-piedra">Tu vitrina está en cero. Arriba, en "Publicar un lote", toca lo que te sobró y listo en 3 pasos.</p>
+          </Card>
         ) : (
           mios.map((l) => (
             <Card key={l.id} className="flex flex-wrap items-center justify-between gap-3">

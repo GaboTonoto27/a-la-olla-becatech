@@ -12,6 +12,8 @@ const Puestos = lazy(() => import('./pages/Puestos.jsx'))
 const PerfilPuesto = lazy(() => import('./pages/PerfilPuesto.jsx'))
 const Mapa = lazy(() => import('./pages/Mapa.jsx'))
 const NoEncontrado = lazy(() => import('./pages/NoEncontrado.jsx'))
+const Chats = lazy(() => import('./pages/Chats.jsx'))
+const Chat = lazy(() => import('./pages/Chat.jsx'))
 const AdminInicio = lazy(() => import('./pages/admin/AdminInicio.jsx'))
 
 function Cargando() {
@@ -31,7 +33,7 @@ function SoloUsuarios({ children }) {
 
 function SoloAdmin({ children }) {
   const { usuario } = useApp()
-  return usuario?.rol === 'admin' ? children : <Navigate to="/" replace />
+  return usuario?.rol === 'admin' ? children : <Navigate to="/" replace state={{ restringido: true }} />
 }
 
 export default function App() {
@@ -47,6 +49,8 @@ export default function App() {
             <Route path="/puestos" element={<SoloUsuarios><Puestos /></SoloUsuarios>} />
             <Route path="/puesto/:id" element={<SoloUsuarios><PerfilPuesto /></SoloUsuarios>} />
             <Route path="/mapa" element={<SoloUsuarios><Mapa /></SoloUsuarios>} />
+            <Route path="/chat" element={<SoloUsuarios><Chats /></SoloUsuarios>} />
+            <Route path="/chat/:id" element={<SoloUsuarios><Chat /></SoloUsuarios>} />
             <Route path="/cuenta" element={<SoloUsuarios><Cuenta /></SoloUsuarios>} />
             <Route path="/admin/*" element={<SoloAdmin><AdminInicio /></SoloAdmin>} />
           </Route>

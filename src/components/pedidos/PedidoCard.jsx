@@ -6,6 +6,7 @@ import Card from '../ui/Card.jsx'
 import Button from '../ui/Button.jsx'
 import Pill from '../ui/Pill.jsx'
 import SinCelularAviso from '../SinCelularAviso.jsx'
+import BotonChat from '../chat/BotonChat.jsx'
 
 function Resumen({ p }) {
   return (
@@ -38,7 +39,13 @@ export function PedidoVendedor({ p }) {
           <CheckCircle2 size={22} className="mt-0.5 shrink-0" aria-hidden="true" />
           Te lo aceptaron a {dinero(p.ganador.precioKg, p.ciudad)}/kg. Alístalo pa' las {p.hora}.
         </p>
-      ) : p.estado === 'aceptado' ? (
+      ) : null}
+      {ganoYo && p.compradorId ? (
+        <BotonChat vendedorId={usuario.id} compradorId={p.compradorId} contexto={`Pedido: ${p.kg} kg de ${p.producto}`} className="w-full">
+          Escribir al comprador
+        </BotonChat>
+      ) : null}
+      {ganoYo ? null : p.estado === 'aceptado' ? (
         <p className="text-base font-semibold text-piedra">Este encargo ya lo tomó otro puesto.</p>
       ) : mia ? (
         <p className="text-base font-semibold text-olla">Ya respondiste: {dinero(mia.precioKg, p.ciudad)}/kg. Esperando que el comprador elija.</p>
@@ -72,7 +79,7 @@ export function PedidoVendedor({ p }) {
 
 // Vista del comprador: ve las respuestas y elige.
 export function PedidoComprador({ p }) {
-  const { elegirOferta, cerrarPedido, sinCelular } = useApp()
+  const { elegirOferta, cerrarPedido, sinCelular, usuario } = useApp()
   return (
     <Card className="space-y-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -85,6 +92,11 @@ export function PedidoComprador({ p }) {
         <p className="rounded-xl border border-[#BCD8C5] bg-[#E7F1EA] p-3 text-base font-semibold text-olla">
           {p.ganador.puesto} te lo guarda a {dinero(p.ganador.precioKg, p.ciudad)}/kg. Pasa {p.dia === 'mañana' ? 'mañana' : 'hoy'} a las {p.hora}, revisas y pagas en efectivo.
         </p>
+      )}
+      {p.estado === 'aceptado' && (
+        <BotonChat vendedorId={p.ganador.vendedorId} compradorId={usuario.id} contexto={`Pedido: ${p.kg} kg de ${p.producto}`} className="w-full">
+          Escribir a {p.ganador.puesto}
+        </BotonChat>
       )}
 
       {p.estado === 'abierto' && (

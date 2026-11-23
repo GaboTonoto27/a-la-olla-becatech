@@ -5,10 +5,11 @@ import { dinero } from '../../lib/dinero.js'
 import Button from '../ui/Button.jsx'
 import Pill from '../ui/Pill.jsx'
 import Card from '../ui/Card.jsx'
+import BotonChat from '../chat/BotonChat.jsx'
 
 // El vendedor ve quién aparta (perfil claro) pa' no descuidar la caja.
 export default function ApartadoVendedor({ a }) {
-  const { actualizarApartado } = useApp()
+  const { actualizarApartado, usuario } = useApp()
   const c = a.comprador
   const confirmado = a.estado === 'confirmado'
   return (
@@ -40,6 +41,9 @@ export default function ApartadoVendedor({ a }) {
         <Button variante="contorno" onClick={() => actualizarApartado(a.id, 'cancelado')}>
           Ya no lo tengo
         </Button>
+        <BotonChat vendedorId={usuario.id} compradorId={c.id} contexto={`${a.codigo} · ${cant(a.cantidad, a.unidad)} de ${a.producto}`} className="sm:col-span-2">
+          Escribir al comprador
+        </BotonChat>
       </div>
     </Card>
   )

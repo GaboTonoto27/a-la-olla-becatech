@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom'
 import { useApp } from '../../context/AppContext.jsx'
 import { pestanasPara } from './navegacion.js'
+import Punto from '../ui/Punto.jsx'
 
 export default function BottomNav() {
-  const { modo } = useApp()
+  const { modo, avisos } = useApp()
   return (
     <nav
       aria-label="Principal"
@@ -20,7 +21,11 @@ export default function BottomNav() {
             }`
           }
         >
-          <Icono size={24} aria-hidden="true" />
+          <span className="relative">
+            <Icono size={24} aria-hidden="true" />
+            {to === '/ultima-hora' && avisos.ultima && <Punto className="absolute -right-1.5 -top-0.5" texto="Tienes apartados por atender" />}
+            {to === '/pedidos' && avisos.pedidos && <Punto className="absolute -right-1.5 -top-0.5" texto="Te respondieron un pedido" />}
+          </span>
           {etiqueta}
         </NavLink>
       ))}

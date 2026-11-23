@@ -8,8 +8,7 @@ import { dinero } from '../lib/dinero.js'
 import { cant } from '../lib/unidades.js'
 import { distanciaM, textoDistancia, urlGoogleMaps, urlWaze } from '../lib/geo.js'
 import { ubicacionExacta, AVISO_ZONA } from '../lib/ubicacion.js'
-import { CIUDADES } from '../data/ciudades.js'
-import { RADIO_ZONA, centroZona, compradoresDe, puestosDe } from '../data/puestos.js'
+import { RADIO_ZONA, centroZona } from '../data/puestos.js'
 import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import Pill from '../components/ui/Pill.jsx'
@@ -47,7 +46,7 @@ function Leyenda({ vende }) {
 }
 
 export default function Mapa() {
-  const { usuario, modo, ciudad, lotes, apartados, pedidos, estandaresDe, cambiarCiudad, ventaBloqueada } = useApp()
+  const { usuario, modo, ciudad, lotes, apartados, pedidos, estandaresDe, ventaBloqueada, puestosDe, compradoresDe } = useApp()
   const ahora = useAhora(60000)
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -74,7 +73,7 @@ export default function Mapa() {
     )
   }
 
-  const miPuesto = useMemo(() => puestosDe(ciudad.id).find((p) => p.id === usuario.id) ?? null, [ciudad.id, usuario.id])
+  const miPuesto = useMemo(() => puestosDe(ciudad.id).find((p) => p.id === usuario.id) ?? null, [ciudad.id, usuario.id, puestosDe])
 
   // Filas de la lista y pines del mapa, según Compro o Vendo.
   const filas = useMemo(() => {
@@ -92,7 +91,7 @@ export default function Mapa() {
         return { ent: c, exacta: ubicacionExacta(c, usuario, apartados, pedidos), pedidos: suyos }
       })
       .filter((f) => f.pedidos.length > 0)
-  }, [vende, lotes, pedidos, apartados, ciudad.id, ahora, usuario, estandaresDe])
+  }, [vende, lotes, pedidos, apartados, ciudad.id, ahora, usuario, estandaresDe, puestosDe, compradoresDe])
 
   const origen = vende ? (miPuesto?.coord ?? pos) : pos
   const filasConDistancia = useMemo(() => {
@@ -151,14 +150,11 @@ export default function Mapa() {
     [navigate],
   )
 
-  // Aviso útil si el visitante abre la app lejos de la plaza (ej. un jurado desde otra ciudad).
+  // Aviso útil si abres la app lejos de la zona (ej. un jurado desde otra ciudad).
   const aviso = useMemo(() => {
     if (!pos) return null
     const aqui = distanciaM(pos, ciudad.centro)
-    if (aqui <= LIMITE_KM * 1000) return null
-    const cercana = [...CIUDADES].sort((a, b) => distanciaM(pos, a.centro) - distanciaM(pos, b.centro))[0]
-    const cerca = distanciaM(pos, cercana.centro) <= LIMITE_KM * 1000 && cercana.id !== ciudad.id ? cercana : null
-    return { km: Math.round(aqui / 1000), cerca }
+    return aqui <= LIMITE_KM * 1000 ? null : { km: Math.round(aqui / 1000) }
   }, [pos, ciudad])
   const cerca = pos && !aviso
 
@@ -196,21 +192,10 @@ export default function Mapa() {
           <p className="flex items-start gap-2 text-base">
             <Info size={22} className="mt-0.5 shrink-0 text-frio" aria-hidden="true" />
             <span>
-              <b>Estás a {aviso.km} km de {ciudad.plaza}.</b>{' '}
-              {aviso.cerca
-                ? `Estás cerca de la plaza demo de ${aviso.cerca.nombre}. Puedes cambiarte o seguir explorando el Piloto Barranquilla.`
-                : 'Puedes seguir explorando el Piloto Barranquilla o mirar las plazas demo desde el selector de ciudad.'}
+              <b>Estás a {aviso.km} km de {ciudad.plaza}.</b> A la Olla trabaja en {ciudad.nombre}: puedes seguir explorando los puestos de la zona.
             </span>
           </p>
-          <div className="grid gap-2 sm:grid-cols-3">
-            {aviso.cerca && (
-              <Button onClick={() => { cambiarCiudad(aviso.cerca.id); setLejosOculto(true) }}>Cambiar a {aviso.cerca.nombre}</Button>
-            )}
-            {!ciudad.piloto && (
-              <Button variante="contorno" onClick={() => { cambiarCiudad('bq'); setLejosOculto(true) }}>Ir al Piloto Barranquilla</Button>
-            )}
-            <Button variante="suave" onClick={() => setLejosOculto(true)}>Seguir explorando</Button>
-          </div>
+          <Button variante="suave" onClick={() => setLejosOculto(true)}>Seguir explorando</Button>
         </Card>
       )}
 
@@ -262,11 +247,11 @@ export default function Mapa() {
                       <p className="flex items-start gap-2 text-base">
                         <MapPin size={18} className="mt-0.5 shrink-0 text-olla" aria-hidden="true" /> {ent.direccion}
                       </p>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row">
                         <a className={ENLACE} href={urlGoogleMaps(ent.coord)} target="_blank" rel="noreferrer">
-                          <Navigation size={20} aria-hidden="true" /> Cómo llegar
+                          <Navigation size={20} aria-hidden="true" /> Cómo llegar (Google Maps)
                         </a>
-                        <a className={ENLACE} href={urlWaze(ent.coord)} target="_blank" rel="noreferrer">Waze</a>
+                        <a className={ENLACE} href={urlWaze(ent.coord)} target="_blank" rel="noreferrer">Abrir en Waze</a>
                       </div>
                     </>
                   )}

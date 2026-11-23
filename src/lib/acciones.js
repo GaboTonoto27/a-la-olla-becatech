@@ -1,9 +1,10 @@
 // Reglas de Última Hora y Pide pa' tu Olla. Todas son funciones puras: reciben el estado y devuelven el nuevo.
 import { proximoCierre } from './tiempo.js'
-import { PERFILES, PERFIL_NUEVO, barrioDe, semilla } from '../data/semilla.js'
+import { PERFILES, semilla } from '../data/semilla.js'
+import { PERFILES_COMPRADOR } from '../data/seed.js'
+import { bloqueada, nombreVisible } from './social.js'
 
 const MIN = 60000
-const FOTOS = { edwin: '/fotos/puesto-lmc.jpg', ana: '/fotos/puesto-metrocentro.jpg' }
 
 // Un lote está en vitrina solo si no se retiró y no ha vencido (reloj de caducidad automática).
 export function loteActivo(l, ahora = Date.now()) {
@@ -16,21 +17,30 @@ export function podar(lotes, ahora = Date.now()) {
 }
 
 export function iniciar(e, ahora = Date.now()) {
-  if (!e.lotes || !e.apartados || !e.pedidos) {
-    const s = semilla(ahora)
-    return { ...e, ...s }
+  // La app es local: siempre trabaja en Barranquilla. Las demás plazas viven en el panel del Admin.
+  if (!e.lotes || !e.apartados || !e.pedidos || !e.cuentas || !e.chats) {
+    return { ...e, ...semilla(ahora), ciudadId: 'bq' }
   }
+  const frenados = new Set(e.cuentas.filter((c) => bloqueada(c, ahora)).map((c) => c.id))
   const lotes = e.lotes.map((l) =>
-    l.demo && (l.vence <= ahora || l.retirado)
+    l.demo && (l.vence <= ahora || l.retirado) && !frenados.has(l.vendedorId)
       ? { ...l, creado: ahora, vence: ahora + l.minutos * MIN, cantidad: l.cantidadInicial, retirado: false }
       : l,
   )
-  return { ...e, lotes: podar(lotes, ahora) }
+  return { ...e, ciudadId: 'bq', lotes: podar(lotes, ahora) }
 }
 
-export function nombreComprador(u) {
-  if (u.id === 'visitante') return 'Visitante (cuenta nueva)'
-  return u.negocio && u.negocio !== 'Hogar' ? u.negocio : `${u.nombre} (Hogar)`
+export const nombreComprador = nombreVisible
+
+// Historial del comprador: lo de fábrica más lo que ha hecho en esta app.
+function perfilDe(e, usuario) {
+  const base = PERFILES[usuario.id]
+  const mios = e.apartados.filter((a) => a.comprador.id === usuario.id)
+  return {
+    tipo: base?.tipo ?? PERFILES_COMPRADOR.find((p) => p.id === usuario.perfilComprador)?.etiqueta ?? 'Cuenta nueva',
+    compras: (base?.compras ?? 0) + mios.filter((a) => a.estado === 'entregado').length,
+    rechazos: (base?.rechazos ?? 0) + mios.filter((a) => a.estado === 'rechazado').length,
+  }
 }
 
 function codigoNuevo(apartados) {
@@ -42,15 +52,15 @@ function codigoNuevo(apartados) {
   return `OLLA-${Date.now() % 10000}`
 }
 
-export function publicarLote(e, usuario, ciudad, d, ahora = Date.now()) {
-  const formal = usuario.tipoPuesto === 'formal'
+export function publicarLote(e, usuario, ciudad, d, puesto, ahora = Date.now()) {
+  const formal = Boolean(puesto?.formal)
   const lote = {
     id: `l-${ahora}-${Math.floor(Math.random() * 1000)}`,
     ciudad: ciudad.id,
     vendedorId: usuario.id,
-    puesto: usuario.negocio === 'Mi cuenta' ? 'Mi puesto' : usuario.negocio,
-    barrio: barrioDe(usuario.id, ciudad),
-    foto: ciudad.piloto ? (FOTOS[usuario.id] ?? null) : null,
+    puesto: puesto?.nombre ?? usuario.negocio,
+    barrio: puesto?.barrio ?? usuario.barrio ?? ciudad.plaza,
+    foto: puesto?.fotos?.[0] ?? null,
     formal,
     frio: formal,
     demo: false,
@@ -93,7 +103,9 @@ export function apartar(e, usuario, loteId, cantidad, ahora = Date.now()) {
     nivel: l.nivel,
     cantidad,
     total: cantidad * l.rescate,
-    comprador: { id: usuario.id, nombre: nombreComprador(usuario), ...(PERFILES[usuario.id] ?? PERFIL_NUEVO) },
+    normal: l.normal,
+    rescate: l.rescate,
+    comprador: { id: usuario.id, nombre: nombreComprador(usuario), ...perfilDe(e, usuario) },
     estado: 'apartado',
     creado: ahora,
   }
@@ -139,13 +151,13 @@ export function crearPedido(e, usuario, ciudadId, d, ahora = Date.now()) {
 }
 
 // El vendedor responde en 2 toques: "Responder" y luego aceptar el precio o mandar el suyo.
-export function responderPedido(e, pedidoId, usuario, precioKg, aceptaPresupuesto) {
+export function responderPedido(e, pedidoId, usuario, precioKg, aceptaPresupuesto, nombrePuesto) {
   const pedidos = e.pedidos.map((p) => {
     if (p.id !== pedidoId || p.estado !== 'abierto' || p.ofertas.some((o) => o.vendedorId === usuario.id)) return p
     const oferta = {
       id: `o-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       vendedorId: usuario.id,
-      puesto: usuario.negocio === 'Mi cuenta' ? 'Mi puesto' : usuario.negocio,
+      puesto: nombrePuesto ?? usuario.negocio,
       precioKg,
     }
     return {

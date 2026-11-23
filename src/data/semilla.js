@@ -1,16 +1,10 @@
 // Datos de prueba de Última Hora y Pide pa' tu Olla (precios reales de las entrevistas, en COP).
+import { cuentasDemo } from './seed.js'
 
 export const PERFILES = {
   wilmary: { tipo: 'Restaurante corrientazo', compras: 23, rechazos: 0 },
   mercedes: { tipo: 'Hogar', compras: 9, rechazos: 1 },
   edwin: { tipo: 'Fruver que también compra', compras: 4, rechazos: 0 },
-  visitante: { tipo: 'Cuenta nueva', compras: 0, rechazos: 0 },
-}
-export const PERFIL_NUEVO = { tipo: 'Cuenta nueva', compras: 0, rechazos: 0 }
-
-const BARRIOS = { edwin: 'Ciudadela 20 de Julio', ana: 'Metrocentro' }
-export function barrioDe(usuarioId, ciudad) {
-  return ciudad.piloto && BARRIOS[usuarioId] ? BARRIOS[usuarioId] : ciudad.plaza
 }
 
 export const CATEGORIAS = [
@@ -139,5 +133,38 @@ export function semilla(ahora = Date.now()) {
   }
   reservar('bq-tomate', 'OLLA-482', 'wilmary', 'El Punto Clave', 3, 25)
   reservar('bq-lechuga', 'OLLA-317', 'mercedes', 'Mercedes (Hogar)', 2, 12)
-  return { lotes, apartados, pedidos: pedidosDemo(ahora) }
+
+  // Entregas de días pasados: así los paneles de la semana muestran cifras reales de ejemplo.
+  const DIA = 24 * 60 * MIN
+  const entrega = (n, v, compradorId, nombre, producto, unidad, cantidad, normal, rescate, diasAntes) => {
+    const t = ahora - diasAntes * DIA
+    apartados.push({
+      id: `a-h${n}`, codigo: `OLLA-${200 + n}`, loteId: `hist-${n}`, ciudad: 'bq', vendedorId: v.id, puesto: v.puesto, barrio: v.barrio,
+      producto, unidad, nivel: 'cocina', cantidad, total: cantidad * rescate, normal, rescate,
+      comprador: { id: compradorId, nombre, ...PERFILES[compradorId] }, estado: 'entregado', creado: t - 40 * MIN, actualizado: t,
+    })
+  }
+  entrega(1, { id: 'edwin', puesto: 'Fruver LMC', barrio: 'Ciudadela 20 de Julio' }, 'wilmary', 'El Punto Clave', 'Tomate', 'kg', 10, 6400, 3800, 1)
+  entrega(2, { id: 'edwin', puesto: 'Fruver LMC', barrio: 'Ciudadela 20 de Julio' }, 'wilmary', 'El Punto Clave', 'Plátano', 'kg', 15, 1400, 800, 3)
+  entrega(3, { id: 'edwin', puesto: 'Fruver LMC', barrio: 'Ciudadela 20 de Julio' }, 'mercedes', 'Mercedes (Hogar)', 'Zanahoria', 'lb', 6, 1400, 900, 4)
+  entrega(4, { id: 'ana', puesto: 'Puesto Ana', barrio: 'Metrocentro' }, 'mercedes', 'Mercedes (Hogar)', 'Bolsita de lechuga', 'bolsa', 3, 5000, 3000, 2)
+
+  const resena = (n, a, autorId, autorNombre, puestoId, puesto, p, t, ap, comentario, diasAntes) => ({
+    id: `r-seed${n}`, puestoId, puesto, apartadoId: a, codigo: `OLLA-${200 + n}`, autorId, autorNombre,
+    puntualidad: p, trato: t, aptitud: ap, promedio: Math.round(((p + t + ap) / 3) * 10) / 10, comentario, cumplio: true,
+    marcada: false, creado: ahora - diasAntes * DIA,
+  })
+  const resenas = [
+    resena(1, 'a-h1', 'wilmary', 'El Punto Clave', 'edwin', 'Fruver LMC', 5, 5, 5, "El tomate estaba maduro pero sano, pa' el guiso quedó perfecto.", 1),
+    resena(4, 'a-h4', 'mercedes', 'Mercedes (Hogar)', 'ana', 'Puesto Ana', 4, 5, 4, 'Muy amable la señora. Revisé la lechuga y estaba buena pa' + "' el sancocho.", 2),
+  ]
+
+  const chats = [
+    {
+      id: 'wilmary__edwin', compradorId: 'wilmary', vendedorId: 'edwin', contexto: 'OLLA-482 · 3 kg de Tomate', silenciado: {}, bloqueadoPor: null,
+      leido: { wilmary: ahora }, creado: ahora - 25 * MIN,
+      mensajes: [{ id: 'm-s1', de: 'wilmary', texto: '¿Me lo guardas 15 min? Ya voy saliendo.', t: ahora - 8 * MIN }],
+    },
+  ]
+  return { lotes, apartados, pedidos: pedidosDemo(ahora), cuentas: cuentasDemo(), chats, resenas }
 }

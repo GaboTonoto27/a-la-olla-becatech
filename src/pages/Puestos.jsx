@@ -4,8 +4,9 @@ import { ChevronRight, Map, PackageOpen } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useAhora } from '../lib/useAhora.js'
 import { loteActivo } from '../lib/acciones.js'
-import { puestosDe } from '../data/puestos.js'
 import { cant } from '../lib/unidades.js'
+import { promedioPuesto } from '../lib/social.js'
+import { Star } from 'lucide-react'
 import Card from '../components/ui/Card.jsx'
 import Chip from '../components/ui/Chip.jsx'
 import Button from '../components/ui/Button.jsx'
@@ -24,14 +25,14 @@ const FILTROS = [
 ]
 
 export default function Puestos() {
-  const { ciudad, lotes, estandaresDe } = useApp()
+  const { ciudad, lotes, estandaresDe, puestosDe, resenas } = useApp()
   const ahora = useAhora(30000)
   const [filtro, setFiltro] = useState('todos')
 
   const lista = useMemo(() => {
     const vivos = lotes.filter((l) => l.ciudad === ciudad.id && loteActivo(l, ahora) && l.cantidad > 0)
     return puestosDe(ciudad.id).map((p) => ({ ...p, lotes: vivos.filter((l) => l.vendedorId === p.id), frio: Boolean(estandaresDe(p.id).frio) }))
-  }, [lotes, ciudad.id, ahora, estandaresDe])
+  }, [lotes, ciudad.id, ahora, estandaresDe, puestosDe])
 
   const visibles = lista.filter((p) => {
     if (filtro === 'frio') return p.frio
@@ -78,6 +79,12 @@ export default function Puestos() {
                 <div>
                   <h2 className="text-2xl">{p.nombre}</h2>
                   <p className="text-base text-piedra">{p.barrio} · {p.formal ? 'Formal' : 'Informal'}</p>
+                  {promedioPuesto(resenas, p.id) && (
+                    <p className="mt-1 flex items-center gap-1 text-sm font-bold">
+                      <Star size={16} className="fill-ambar text-ambar" aria-hidden="true" />
+                      {String(promedioPuesto(resenas, p.id).promedio).replace('.', ',')} · compras verificadas
+                    </p>
+                  )}
                 </div>
                 <Sellos vendedorId={p.id} avisoSinCelular />
                 <div className="mt-auto flex items-center justify-between gap-2">

@@ -10,8 +10,8 @@ export const CIUDADES = [
     moneda: 'pesos colombianos',
     codigo: 'COP',
     factor: 1,
-    centro: [10.9275, -74.8045],
-    zoom: 16,
+    centro: [10.929, -74.8045],
+    zoom: 15,
     coordinador: 'Coordinación Barranquilla',
   },
   {

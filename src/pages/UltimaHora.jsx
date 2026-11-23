@@ -4,7 +4,9 @@ import { useApp } from '../context/AppContext.jsx'
 import { useAhora } from '../lib/useAhora.js'
 import { loteActivo } from '../lib/acciones.js'
 import { dinero } from '../lib/dinero.js'
-import { esSabado, textoRestante } from '../lib/tiempo.js'
+import { esSabado } from '../lib/tiempo.js'
+import { plazaAbierta, textoRestanteLote } from '../lib/horario.js'
+import AvisoHorario from '../components/layout/AvisoHorario.jsx'
 import { CATEGORIAS } from '../data/semilla.js'
 import Card from '../components/ui/Card.jsx'
 import Chip from '../components/ui/Chip.jsx'
@@ -31,6 +33,7 @@ function Accesos() {
 }
 
 function AvisoCierre({ ahora }) {
+  if (!plazaAbierta(ahora)) return <AvisoHorario ahora={ahora} />
   const sabado = esSabado(ahora)
   return (
     <Card className={`flex items-start gap-3 ${sabado ? 'border-[#F0C4B6] bg-[#FBE9E3]' : ''}`}>
@@ -166,7 +169,7 @@ function Vendedor({ ahora }) {
               <div>
                 <p className="text-lg font-bold">{l.producto}</p>
                 <p className="text-base text-piedra">
-                  {l.cantidad > 0 ? `Quedan ${cant(l.cantidad, l.unidad)}` : 'Agotado'} · {dinero(l.rescate, l.ciudad)}/{l.unidad} · {textoRestante(l.vence, ahora)}
+                  {l.cantidad > 0 ? `Quedan ${cant(l.cantidad, l.unidad)}` : 'Agotado'} · {dinero(l.rescate, l.ciudad)}/{l.unidad} · {textoRestanteLote(l.vence, ahora)}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">

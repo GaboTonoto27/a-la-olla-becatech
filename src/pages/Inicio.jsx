@@ -4,7 +4,8 @@ import { useApp } from '../context/AppContext.jsx'
 import { useAhora } from '../lib/useAhora.js'
 import { loteActivo } from '../lib/acciones.js'
 import { dinero } from '../lib/dinero.js'
-import { textoRestante } from '../lib/tiempo.js'
+import { textoRestanteLote } from '../lib/horario.js'
+import AvisoHorario from '../components/layout/AvisoHorario.jsx'
 import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import Pill from '../components/ui/Pill.jsx'
@@ -49,6 +50,7 @@ export default function Inicio() {
       </div>
 
       <AvisoPlaza />
+      <AvisoHorario ahora={ahora} />
 
       <section className="grid grid-cols-3 gap-2 sm:gap-3" aria-label="Resumen de hoy">
         {vende ? (
@@ -121,7 +123,7 @@ export default function Inicio() {
                 <li key={l.id} className="flex items-center justify-between gap-3 py-2">
                   <div>
                     <p className="text-lg font-bold">{l.producto}</p>
-                    <p className="text-sm font-semibold text-ambar">{textoRestante(l.vence, ahora)}</p>
+                    <p className="text-sm font-semibold text-ambar">{textoRestanteLote(l.vence, ahora)}</p>
                   </div>
                   <p className="font-titulo text-2xl font-extrabold text-olla">
                     {dinero(l.rescate, l.ciudad)}<span className="text-sm">/{l.unidad}</span>

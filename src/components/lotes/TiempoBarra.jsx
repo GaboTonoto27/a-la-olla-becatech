@@ -1,5 +1,6 @@
 import { Clock } from 'lucide-react'
-import { textoRestante, tonoRestante } from '../../lib/tiempo.js'
+import { tonoRestante } from '../../lib/tiempo.js'
+import { textoRestanteLote } from '../../lib/horario.js'
 
 const COLORES = { olla: 'bg-olla', ambar: 'bg-ambar', tomate: 'bg-tomate' }
 const TEXTO = { olla: 'text-olla', ambar: 'text-ambar', tomate: 'text-[#A8391B]' }
@@ -12,7 +13,7 @@ export default function TiempoBarra({ lote, ahora }) {
   return (
     <div>
       <p className={`mb-1 flex items-center gap-1.5 text-sm font-bold ${TEXTO[tono]}`}>
-        <Clock size={16} aria-hidden="true" /> {textoRestante(lote.vence, ahora)}
+        <Clock size={16} aria-hidden="true" /> {textoRestanteLote(lote.vence, ahora)}
       </p>
       <div className="h-2 overflow-hidden rounded-full bg-stone-200" aria-hidden="true">
         <div className={`h-full rounded-full ${COLORES[tono]}`} style={{ width: `${pct}%` }} />

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Banknote, CheckCircle2, MapPin } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
-import { textoRestante } from '../../lib/tiempo.js'
+import { textoRestanteLote } from '../../lib/horario.js'
 import Modal from '../ui/Modal.jsx'
 import Button from '../ui/Button.jsx'
 import Contador from '../ui/Contador.jsx'
@@ -72,7 +72,7 @@ export default function ApartarModal({ lote, onCerrar }) {
       }
     >
       <p className="mb-3 text-base text-piedra">
-        {lote.puesto} · {lote.barrio}. {textoRestante(lote.vence)}.
+        {lote.puesto} · {lote.barrio}. {textoRestanteLote(lote.vence)}.
       </p>
       <p className="mb-2 text-base font-bold">¿Cuánto quieres?</p>
       <Contador valor={cantidad} onChange={setCantidad} max={lote.cantidad} unidad={lote.unidad} etiqueta="Cantidad a apartar" />

@@ -8,6 +8,7 @@ import Button from '../ui/Button.jsx'
 import Chip from '../ui/Chip.jsx'
 import Contador from '../ui/Contador.jsx'
 import { cant } from '../../lib/unidades.js'
+import { plazaAbierta } from '../../lib/horario.js'
 
 const UNIDADES = ['kg', 'lb', 'bolsa', 'unidad']
 // Fórmulas de precio de los fruvers: sobre tu precio base.
@@ -67,7 +68,7 @@ export default function PublicarLote() {
           <CheckCircle2 size={24} aria-hidden="true" /> ¡Publicado!
         </p>
         <p className="text-base">
-          {cant(publicado.cantidad, publicado.unidad)} de {publicado.producto} a {dinero(publicado.rescate, publicado.ciudad)}. Se retira solo a las 4:00 p. m. si nadie lo aparta.
+          {cant(publicado.cantidad, publicado.unidad)} de {publicado.producto} a {dinero(publicado.rescate, publicado.ciudad)}. Se retira solo a las 4:00 p. m. si nadie lo aparta{plazaAbierta() ? '' : ' (simulación de cierre)'}.
         </p>
         <Button onClick={() => setPublicado(null)} className="w-full sm:w-auto">Publicar otro</Button>
       </Card>

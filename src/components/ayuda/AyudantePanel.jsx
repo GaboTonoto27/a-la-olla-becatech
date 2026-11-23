@@ -60,7 +60,7 @@ export default function AyudantePanel({ onCerrar }) {
         <p className="flex items-start gap-2 text-base">
           <Clock size={20} className="mt-0.5 shrink-0 text-olla" aria-hidden="true" />
           <span>
-            Soporte de la {ciudad.coordinador}: {HORARIO_SOPORTE}.{' '}
+            Soporte de la {ciudad.coordinador}: {HORARIO_SOPORTE}{' '}
             <b className={dentro ? 'text-olla' : 'text-ambar'}>{dentro ? 'Atendemos ahora.' : 'Ahora estamos fuera de horario: te respondemos en el próximo turno.'}</b>
           </span>
         </p>

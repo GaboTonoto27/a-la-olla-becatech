@@ -5,6 +5,7 @@ import Card from '../../components/ui/Card.jsx'
 import Button from '../../components/ui/Button.jsx'
 import TabResumen from './TabResumen.jsx'
 import TabDenuncias from './TabDenuncias.jsx'
+import TabReembolsos from './TabReembolsos.jsx'
 import TabUsuarios from './TabUsuarios.jsx'
 import TabTickets from './TabTickets.jsx'
 import TabExpansion from './TabExpansion.jsx'
@@ -12,17 +13,19 @@ import TabExpansion from './TabExpansion.jsx'
 const TABS = [
   { id: 'resumen', etiqueta: 'Resumen y Sostenibilidad' },
   { id: 'denuncias', etiqueta: 'Denuncias y Calidad' },
+  { id: 'reembolsos', etiqueta: 'Reembolsos y Devoluciones' },
   { id: 'usuarios', etiqueta: 'Usuarios y Moderación' },
   { id: 'tickets', etiqueta: 'Tickets de soporte' },
   { id: 'expansion', etiqueta: 'Expansión y Plazas' },
 ]
 
 function Campana({ irA }) {
-  const { denuncias, tickets, marcados, sinLeerAdmin, marcarTodoLeido } = useApp()
+  const { denuncias, tickets, marcados, devoluciones, sinLeerAdmin, marcarTodoLeido } = useApp()
   const [abierta, setAbierta] = useState(false)
   const items = [
     ...denuncias.filter((d) => !d.leida).map((d) => ({ id: d.id, tab: 'denuncias', texto: d.asunto, tipo: 'Denuncia', t: d.creado })),
     ...tickets.filter((t) => !t.leida).map((t) => ({ id: t.id, tab: 'tickets', texto: t.asunto, tipo: 'Ticket', t: t.creado })),
+    ...devoluciones.filter((d) => !d.leida).map((d) => ({ id: d.id, tab: 'reembolsos', texto: `${d.producto} · ${d.autorNombre}`, tipo: 'Devolución', t: d.creado })),
     ...marcados.filter((m) => !m.leida).map((m) => ({ id: m.id, tab: 'usuarios', texto: m.texto, tipo: 'Comentario marcado', t: m.creado })),
   ].sort((a, b) => b.t - a.t)
 
@@ -122,6 +125,7 @@ export default function AdminInicio() {
 
       {tab === 'resumen' && <TabResumen />}
       {tab === 'denuncias' && <TabDenuncias />}
+      {tab === 'reembolsos' && <TabReembolsos />}
       {tab === 'usuarios' && <TabUsuarios />}
       {tab === 'tickets' && <TabTickets />}
       {tab === 'expansion' && <TabExpansion />}

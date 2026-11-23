@@ -1,6 +1,7 @@
 // Reglas de cuentas, chat, reseñas, denuncias y soporte. Funciones puras: reciben el estado y devuelven el nuevo.
 import { clasificar, esOfensivo, ETIQUETA_NIVEL } from './copiloto.js'
 import { PERFILES_COMPRADOR } from '../data/seed.js'
+import { correoValido } from './verificacion.js'
 
 const MIN = 60000
 const DIA = 24 * 60 * MIN
@@ -49,7 +50,7 @@ export function crearCuenta(e, d) {
   const correo = normalizarCorreo(d.correo)
   const nombre = String(d.nombre ?? '').trim()
   if (nombre.length < 2) return { estado: e, resultado: { ok: false, error: 'Escribe tu nombre.' } }
-  if (!/^\S+@\S+\.\S+$/.test(correo)) return { estado: e, resultado: { ok: false, error: 'Escribe un correo válido, por ejemplo nombre@correo.com.' } }
+  if (!correoValido(correo)) return { estado: e, resultado: { ok: false, error: 'Escribe un correo válido, por ejemplo nombre@correo.com.' } }
   if (d.proveedor === 'clave' && String(d.clave ?? '').length < 6) {
     return { estado: e, resultado: { ok: false, error: 'La contraseña debe tener mínimo 6 letras o números.' } }
   }
@@ -306,13 +307,17 @@ export function marcarTodoLeido(e) {
       denuncias: e.denuncias.map((d) => ({ ...d, leida: true })),
       tickets: e.tickets.map((t) => ({ ...t, leida: true })),
       marcados: e.marcados.map((m) => ({ ...m, leida: true })),
+      devoluciones: (e.devoluciones ?? []).map((d) => ({ ...d, leida: true })),
     },
     resultado: true,
   }
 }
 
 export const sinLeerAdmin = (e) =>
-  e.denuncias.filter((d) => !d.leida).length + e.tickets.filter((t) => !t.leida).length + e.marcados.filter((m) => !m.leida).length
+  e.denuncias.filter((d) => !d.leida).length +
+  e.tickets.filter((t) => !t.leida).length +
+  e.marcados.filter((m) => !m.leida).length +
+  (e.devoluciones ?? []).filter((d) => !d.leida).length
 
 // ---------- Soporte ----------
 export function crearTicket(e, d, ahora = Date.now()) {

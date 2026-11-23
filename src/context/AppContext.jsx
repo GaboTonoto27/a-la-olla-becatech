@@ -3,6 +3,7 @@ import { guardar, leer, resetDemo as limpiarStore } from '../data/store.js'
 import { ciudadPorId } from '../data/ciudades.js'
 import * as reglas from '../lib/acciones.js'
 import * as social from '../lib/social.js'
+import * as dev from '../lib/devoluciones.js'
 import { listaPuestos } from '../data/puestos.js'
 
 const AppContext = createContext(null)
@@ -218,6 +219,16 @@ export function AppProvider({ children }) {
     [aplicar, avisarAdmin, cuentas],
   )
 
+  const solicitarDevolucion = useCallback(
+    (d) => {
+      const yo = ref.current.cuentas.find((c) => c.id === ref.current.usuarioId)
+      const r = aplicar(dev.solicitarDevolucion, { autorId: yo?.id, autorNombre: yo?.nombre, ...d })
+      if (r) avisarAdmin('A la Olla · Devolución solicitada', `${r.producto} · ${r.autorNombre}`)
+      return r
+    },
+    [aplicar, avisarAdmin],
+  )
+
   // ---- Avisos (punto terracota) ----
   const avisos = useMemo(() => {
     if (!usuario || usuario.rol === 'admin') return { chat: 0, ultima: false, pedidos: false }
@@ -252,6 +263,9 @@ export function AppProvider({ children }) {
     denuncias: estado.denuncias,
     tickets: estado.tickets,
     marcados: estado.marcados,
+    devoluciones: estado.devoluciones ?? [],
+    solicitarDevolucion,
+    resolverDevolucion: (id, decision, nota) => aplicar(dev.resolverDevolucion, id, decision, nota),
     alertasCorreo: estado.alertasCorreo,
     plazas: estado.plazas,
     adminCorreo: estado.adminCorreo,

@@ -22,6 +22,7 @@ const INICIAL = {
   denuncias: [],
   tickets: [],
   marcados: [],
+  devoluciones: [],
   alertasCorreo: [],
   adminCorreo: '',
   pushAdmin: false,

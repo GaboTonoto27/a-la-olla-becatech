@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
+import { totalesDevueltos } from '../../lib/devoluciones.js'
 import { COSTOS_MES, COSTO_TOTAL_MES, CUOTA_FORMAL, META_PUESTOS, PROMEDIO_POPULAR, kilosDe, sostenibilidad } from '../../lib/economia.js'
 import Card from '../../components/ui/Card.jsx'
 import Pill from '../../components/ui/Pill.jsx'
@@ -24,18 +25,21 @@ function Linea({ k, v, fuerte, tono }) {
 }
 
 export default function TabResumen() {
-  const { apartados, puestos, lotes, cuentas } = useApp()
+  const { apartados, puestos, lotes, cuentas, devoluciones } = useApp()
+  const dev = useMemo(() => totalesDevueltos(devoluciones), [devoluciones])
   const datos = useMemo(() => {
     const entregas = apartados.filter((a) => a.estado === 'entregado')
     const kg = entregas.reduce((s, a) => s + kilosDe(a.unidad, a.cantidad), 0)
-    const cop = entregas.reduce((s, a) => s + a.total, 0)
+    const cop = entregas.reduce((s, a) => s + a.total, 0) - dev.compras
     const activos = puestos.filter((p) => p.tipo === 'puesto')
     const formales = activos.filter((p) => p.plan === 'formal').length
     const populares = activos.length - formales
     return { entregas: entregas.length, kg, cop, activos: activos.length, formales, populares }
-  }, [apartados, puestos])
+  }, [apartados, puestos, dev.compras])
 
   const hoy = sostenibilidad(datos.formales, datos.populares)
+  const cuotasDevueltas = dev.cuotas + dev.saldos
+  const resultadoHoy = hoy.neto - cuotasDevueltas
   // Meta: los ~35 puestos de frutas y verduras de la plaza, con la misma mezcla formal/popular de hoy.
   const total = Math.max(1, datos.activos)
   const metaFormales = Math.round(META_PUESTOS * (datos.formales / total || 0.6))
@@ -51,6 +55,11 @@ export default function TabResumen() {
         <Cifra valor={datos.activos} etiqueta="Puestos activos" />
         <Cifra valor={datos.entregas} etiqueta="Entregas completadas" />
       </section>
+      {(dev.compras > 0 || cuotasDevueltas > 0) && (
+        <p className="text-base text-piedra">
+          Ya descontamos los reembolsos aprobados: {dinero(dev.compras)} a compradores y {dinero(cuotasDevueltas)} de cuotas devueltas.
+        </p>
+      )}
       <p className="text-base text-piedra">
         Además hay {lotes.filter((l) => !l.retirado && l.vence > Date.now() && l.cantidad > 0).length} lotes en vitrina y {cuentas.filter((c) => c.rol !== 'admin').length} cuentas registradas.
       </p>
@@ -71,7 +80,8 @@ export default function TabResumen() {
               <Linea k="Ingresos por semana" v={dinero(hoy.semana)} />
               <Linea k="Ingresos por mes" v={dinero(hoy.mes)} />
               <Linea k="Costos fijos por mes" v={`− ${dinero(COSTO_TOTAL_MES)}`} />
-              <Linea k="Resultado del mes" v={`${hoy.neto >= 0 ? '' : '− '}${dinero(Math.abs(hoy.neto))}`} fuerte tono={hoy.neto >= 0 ? 'bien' : 'mal'} />
+              {cuotasDevueltas > 0 && <Linea k="Cuotas devueltas (aprobadas)" v={`− ${dinero(cuotasDevueltas)}`} />}
+              <Linea k="Resultado del mes" v={`${resultadoHoy >= 0 ? '' : '− '}${dinero(Math.abs(resultadoHoy))}`} fuerte tono={resultadoHoy >= 0 ? 'bien' : 'mal'} />
             </ul>
           </div>
           <div>

@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { ArrowLeft, ChefHat, Phone, Store, Users } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
-import { BARRIOS, PERFILES_COMPRADOR } from '../data/seed.js'
+import { PERFILES_COMPRADOR } from '../data/seed.js'
+import { correoValido } from '../lib/verificacion.js'
+import ConfirmaCorreo from '../components/auth/ConfirmaCorreo.jsx'
 import BannerPrototipo from '../components/layout/BannerPrototipo.jsx'
 import Button from '../components/ui/Button.jsx'
 import Chip from '../components/ui/Chip.jsx'
@@ -55,7 +57,7 @@ function IniciarSesion({ valores, onCambio }) {
 }
 
 function CrearCuenta() {
-  const { registrar } = useApp()
+  const { registrar, cuentas } = useApp()
   const [paso, setPaso] = useState(1)
   const [f, setF] = useState({ nombre: '', correo: '', clave: '', barrio: '', rol: 'comprador', perfilComprador: 'hogar' })
   const [puesto, setPuesto] = useState(PUESTO_VACIO)
@@ -63,12 +65,17 @@ function CrearCuenta() {
   const vende = f.rol !== 'comprador'
   const compra = f.rol !== 'vendedor'
 
-  const enviar = (extra) => {
-    const r = registrar({ ...f, perfilComprador: compra ? f.perfilComprador : undefined, puesto: extra })
+  // Solo aquí se crea la cuenta: después de que la persona escribió el código correcto.
+  const crear = () => {
+    const r = registrar({ ...f, perfilComprador: compra ? f.perfilComprador : undefined, puesto: vende ? puesto : null })
     if (!r.ok) {
       setError(r.error)
       setPaso(1)
     }
+  }
+
+  if (paso === 3) {
+    return <ConfirmaCorreo correo={f.correo.trim()} onVerificado={crear} onVolver={() => setPaso(vende ? 2 : 1)} />
   }
 
   if (paso === 2) {
@@ -77,7 +84,7 @@ function CrearCuenta() {
         className="space-y-5"
         onSubmit={(e) => {
           e.preventDefault()
-          enviar(puesto)
+          setPaso(3)
         }}
       >
         <button type="button" onClick={() => setPaso(1)} className="flex min-h-[48px] items-center gap-2 text-base font-bold text-olla">
@@ -101,9 +108,11 @@ function CrearCuenta() {
       className="space-y-4"
       onSubmit={(e) => {
         e.preventDefault()
+        const correo = f.correo.trim().toLowerCase()
+        if (!correoValido(correo)) return setError('Escribe un correo real, por ejemplo nombre@gmail.com.')
+        if (cuentas.some((c) => c.correo.toLowerCase() === correo)) return setError('Ese correo ya tiene cuenta. Entra desde "Iniciar sesión".')
         setError('')
-        if (vende) setPaso(2)
-        else enviar(null)
+        setPaso(vende ? 2 : 3)
       }}
     >
       <label className="block text-base font-semibold">
@@ -112,7 +121,7 @@ function CrearCuenta() {
       </label>
       <label className="block text-base font-semibold">
         Correo
-        <input required type="email" value={f.correo} onChange={(e) => setF({ ...f, correo: e.target.value })} autoComplete="email" className={`mt-1 ${campo}`} />
+        <input required type="email" inputMode="email" value={f.correo} onChange={(e) => setF({ ...f, correo: e.target.value })} autoComplete="email" className={`mt-1 ${campo}`} />
       </label>
       <label className="block text-base font-semibold">
         Contraseña (mínimo 6)
@@ -120,8 +129,7 @@ function CrearCuenta() {
       </label>
       <label className="block text-base font-semibold">
         Tu barrio
-        <input list="barrios" value={f.barrio} onChange={(e) => setF({ ...f, barrio: e.target.value })} placeholder="Ciudadela 20 de Julio" className={`mt-1 ${campo}`} />
-        <datalist id="barrios">{BARRIOS.map((b) => <option key={b} value={b} />)}</datalist>
+        <input required value={f.barrio} onChange={(e) => setF({ ...f, barrio: e.target.value })} placeholder="Escribe tu barrio o sector" autoComplete="off" className={`mt-1 ${campo}`} />
       </label>
 
       <div>

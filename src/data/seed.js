@@ -7,7 +7,6 @@ export const PERFILES_COMPRADOR = [
   { id: 'hogar', etiqueta: 'Hogar' },
 ]
 
-export const BARRIOS = ['Ciudadela 20 de Julio', 'Metrocentro', 'Metropolitana', 'La 49', '7 de Abril', 'Conidec']
 
 export const USUARIOS_DEMO = [
   {

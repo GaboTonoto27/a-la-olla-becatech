@@ -1,8 +1,9 @@
-# Progreso — Bloque 4 + producto real listo (falta tu revisión en el navegador)
-- Producto real: `/login` con Crear cuenta / Iniciar sesión, OAuth simulado (modal), alta de puesto en 1 pantalla (mapa/GPS), cuentas demo en acordeón con "Autocompletar"; fin de "Visitante". UI adaptativa por rol, estados vacíos guiados y `/admin` solo pa' `admin@alaolla.co` (los demás vuelven a `/` con aviso). Sin selector de ciudades: zona fija Ciudadela 20 de Julio; expansión en `/admin` y tarjeta en `/cuenta`.
-- Coordenadas exactas (LMC, Ana, El Maná, Punto Clave, Nuevo Santander), mapa en 10.9290,-74.8045 z15, zonas `L.circle` hasta apartar/confirmar; "Cómo llegar (Google Maps)" y "Abrir en Waze" con lat,lng y aviso de seguridad si no hay desbloqueo.
-- Chat seguro (`/chat`, desde cada apartado/encargo/puesto): respuestas de 1 toque, Silenciar/Bloquear/Denunciar, sin teléfonos, punto terracota en Chat, Última hora y Pedidos. Reseñas solo tras "Lo revisé y me lo llevo" (sello Compra verificada), filtro ofensivo y "Rechazar por calidad / Denunciar engaño" en vivo al Admin.
-- Asistente 24/7 flotante (carga perezosa, FAQ por palabras clave, tickets) y Mi cuenta: puesto editable, panel económico real (kilos, COP, entregas, Ganado vs Cuota) y PDF semanal con `jspdf` por import dinámico.
-- `/admin`: campana + push del navegador, correo del Admin con bandeja y `mailto:`, 5 pestañas (Sostenibilidad con punto de equilibrio, Denuncias con Copiloto y strikes, Usuarios, Tickets, Expansión).
-- Store v4 borra solo claves y sesiones viejas. `npm run build` OK: JS inicial 101,3 kB gz + 0,4 kB runtime + CSS 6,3 kB; jsPDF y Leaflet en chunks aparte. Lógica pura probada con script; Playwright NO corrido.
-- Pendiente: tu prueba en navegador (GPS real, push, mailto, descarga del PDF), `git commit` y `/clear`.
+# Progreso — Bloque 4 + 4 ajustes (falta tu revisión en el navegador)
+- Producto real: `/login` (Crear cuenta / Iniciar sesión, OAuth simulado), puesto en 1 pantalla con mapa/GPS, rol por cuenta, `/admin` solo pa' `admin@alaolla.co`, zona fija Ciudadela 20 de Julio. Mapa Leaflet con "Cómo llegar"/Waze, chat seguro, reseñas verificadas, denuncias, Asistente 24/7, tickets y PDF semanal (`jspdf` dinámico).
+- Ajuste 1: "Tu barrio" 100% libre y obligatorio (sin `datalist`, vacío, placeholder "Escribe tu barrio o sector"); `BARRIOS` eliminado.
+- Ajuste 2: correo estricto (`src/lib/verificacion.js`) + paso "Confirma tu correo" con código de 6 dígitos y reenvío a 30 s (5 intentos). La cuenta se crea solo con el código bueno. `enviarCodigoVerificacion` usa EmailJS REST por `fetch` si hay `VITE_EMAILJS_*`; si no, tarjeta "Simulación de correo recibido en [correo]" con el código.
+- Ajuste 3: devoluciones (`src/lib/devoluciones.js`, `devoluciones` en el store sin subir versión). `/cuenta`: "Mis compras" con "Solicitar devolución / reembolso" y estado en vivo; vendedor con "Garantía y devolución de cuota" (reembolso o saldo a favor). `/admin`: pestaña "Reembolsos y Devoluciones" (aprobar/rechazar con nota, campana y contador).
+- Lo aprobado se descuenta de: balance y PDF del vendedor, ahorro del comprador y totales/resultado del mes del Admin.
+- Ajuste 4: subtítulo de `/cuenta` sin nombre repetido ("Juguería / Fritos") y un solo punto en "…4:00 p. m. Atendemos ahora."
+- `npm run build` OK: JS inicial 103,6 kB gz (< 150); jsPDF y Leaflet en chunks aparte. Lógica de correo y devoluciones probada con script; Playwright NO corrido.
+- Pendiente: tu prueba en navegador, `git commit` y pulido final con Impeccable + Playwright.

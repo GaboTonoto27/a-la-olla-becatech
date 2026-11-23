@@ -33,11 +33,11 @@ function Barra({ etiqueta, valor, max, color }) {
 
 // Cifras reales: parten en $0 y suben solas con cada entrega confirmada ("Lo revisé y me lo llevo").
 export default function PanelEconomico() {
-  const { usuario, apartados, modo, miPuesto } = useApp()
+  const { usuario, apartados, modo, miPuesto, devoluciones } = useApp()
   const [bajando, setBajando] = useState(false)
   const vendedor = modo === 'vendedor'
   const plan = miPuesto?.plan ?? 'popular'
-  const r = resumenSemana(apartados, usuario.id, vendedor, plan)
+  const r = resumenSemana(apartados, usuario.id, vendedor, plan, Date.now(), devoluciones)
   const maximo = Math.max(r.ingresos, r.cuota)
 
   const descargar = async () => {
@@ -106,6 +106,8 @@ export default function PanelEconomico() {
           <Barra etiqueta="Tu cuota de la semana" valor={r.cuota} max={maximo} color="bg-ambar" />
           <p className="text-base">
             Te quedan <b className="text-olla">{dinero(r.balance)}</b>
+            {r.devuelto > 0 && <> (ya descontamos {dinero(r.devuelto)} en devoluciones a compradores)</>}
+            {r.cuotaDevuelta > 0 && <> (incluye {dinero(r.cuotaDevuelta)} de cuota devuelta)</>}
             {r.roi ? <> · por cada $1 de cuota recuperaste ${String(r.roi).replace('.', ',')}.</> : '.'}
           </p>
           <p className="text-sm text-piedra">

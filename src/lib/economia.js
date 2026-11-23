@@ -24,24 +24,39 @@ export function cuotaSemana(plan, ingresos, entregas) {
   return Math.min(CUOTA_POPULAR_MAX, Math.round((ingresos * 0.05) / 100) * 100)
 }
 
-export function resumenSemana(apartados, usuarioId, comoVendedor, plan, ahora = Date.now()) {
+// devoluciones: las aprobadas descuentan la plata devuelta al comprador y suman la cuota devuelta al vendedor.
+export function resumenSemana(apartados, usuarioId, comoVendedor, plan, ahora = Date.now(), devoluciones = []) {
+  const desde = ahora - SEMANA
   const entregas = apartados
     .filter((a) => a.estado === 'entregado' && (comoVendedor ? a.vendedorId === usuarioId : a.comprador.id === usuarioId))
-    .filter((a) => (a.actualizado ?? a.creado) >= ahora - SEMANA)
+    .filter((a) => (a.actualizado ?? a.creado) >= desde)
     .sort((a, b) => (b.actualizado ?? b.creado) - (a.actualizado ?? a.creado))
+  const ok = devoluciones.filter((d) => d.estado === 'aprobado')
+  const reembolsadas = new Set(ok.filter((d) => d.clase === 'compra' && d.tipo === 'dinero').map((d) => d.apartadoId))
+  const devueltoDe = entregas.filter((a) => reembolsadas.has(a.id))
+  const devuelto = devueltoDe.reduce((s, a) => s + a.total, 0)
+  const cuotaOk = comoVendedor ? ok.filter((d) => d.clase === 'cuota' && d.autorId === usuarioId && (d.resueltoEn ?? d.creado) >= desde) : []
+  const cuotaDevuelta = cuotaOk.filter((d) => d.tipo === 'dinero').reduce((s, d) => s + d.monto, 0)
+  const saldoFavor = cuotaOk.filter((d) => d.tipo === 'saldo').reduce((s, d) => s + d.monto, 0)
+
   const kilos = entregas.reduce((s, a) => s + kilosDe(a.unidad, a.cantidad), 0)
-  const ingresos = entregas.reduce((s, a) => s + a.total, 0)
-  const ahorro = entregas.reduce((s, a) => s + (a.normal ? Math.max(0, (a.normal - (a.rescate ?? a.normal)) * a.cantidad) : 0), 0)
+  const ingresos = entregas.reduce((s, a) => s + a.total, 0) - devuelto
+  const ahorro = entregas
+    .filter((a) => !reembolsadas.has(a.id))
+    .reduce((s, a) => s + (a.normal ? Math.max(0, (a.normal - (a.rescate ?? a.normal)) * a.cantidad) : 0), 0)
   const cuota = comoVendedor ? cuotaSemana(plan, ingresos, entregas.length) : 0
   return {
     entregas,
     kilos: Math.round(kilos * 10) / 10,
     ingresos,
     ahorro,
+    devuelto,
     cuota,
-    balance: ingresos - cuota,
+    cuotaDevuelta,
+    saldoFavor,
+    balance: ingresos - cuota + cuotaDevuelta,
     roi: cuota > 0 ? Math.round((ingresos / cuota) * 10) / 10 : null,
-    desde: ahora - SEMANA,
+    desde,
     hasta: ahora,
   }
 }

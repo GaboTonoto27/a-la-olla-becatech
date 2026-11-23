@@ -111,7 +111,10 @@ export async function descargarReporte(datos) {
     const filas = [
       ['Plan', planTexto],
       ['Ganado en la semana', dinero(r.ingresos)],
+      ...(r.devuelto > 0 ? [['Devoluciones a compradores (ya descontadas)', `- ${dinero(r.devuelto)}`]] : []),
       ['Cuota de la semana', dinero(r.cuota)],
+      ...(r.cuotaDevuelta > 0 ? [['Cuota devuelta (aprobada)', `+ ${dinero(r.cuotaDevuelta)}`]] : []),
+      ...(r.saldoFavor > 0 ? [['Saldo a favor para la proxima cuota', dinero(r.saldoFavor)]] : []),
     ]
     for (const [k, v] of filas) {
       doc.setTextColor(...PIEDRA)
@@ -132,6 +135,14 @@ export async function descargarReporte(datos) {
       doc.text(`Por cada $1 de cuota, recuperaste ${String(r.roi).replace('.', ',')}.`, 17, y)
       y += 6
     }
+  }
+
+  if (!vendedor && r.devuelto > 0) {
+    y += 8
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.setTextColor(...PIEDRA)
+    doc.text(`Reembolsos aprobados esta semana: ${dinero(r.devuelto)} (ya no cuentan como ahorro).`, 17, y)
   }
 
   doc.setFont('helvetica', 'normal')

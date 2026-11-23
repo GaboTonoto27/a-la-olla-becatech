@@ -2,6 +2,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { ChefHat, Store } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import Toggle from '../ui/Toggle.jsx'
+import SelectorCiudad from './SelectorCiudad.jsx'
 import { pestanasPara } from './navegacion.js'
 
 export default function Header() {
@@ -18,7 +19,7 @@ export default function Header() {
 
         {!esAdmin && (
           <nav aria-label="Escritorio" className="ml-6 hidden items-center gap-1 md:flex">
-            {pestanasPara(modo).map(({ to, etiqueta, fin }) => (
+            {pestanasPara(modo, true).map(({ to, etiqueta, fin }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -55,6 +56,7 @@ export default function Header() {
           </div>
         )}
       </div>
+      {!esAdmin && <SelectorCiudad />}
     </header>
   )
 }

@@ -1,7 +1,7 @@
-# Progreso — Bloque 1 listo (falta tu revisión en el navegador)
-- Vite + React 19 + Tailwind v4 (tokens `@theme`), fuentes Google, manifest + ícono, `vercel.json` (rewrite SPA). `npm run build` OK (JS inicial 89 KB gz).
-- Contexto (`AppContext`) + `store.js` (localStorage versionado, `resetDemo`) + `seed.js` (5 cuentas demo + visitante).
-- Login: Google/Facebook/Usuario-clave simulados + "Entrar rápido (jurados)" con 5 cuentas; interruptor Compro/Vendo solo para rol "ambos".
-- Pacto de Alimentos Aptos: modal obligatorio por usuario; sin aceptar no entra. Layout: Header, BottomNav (4 pestañas por modo), banner de prototipo.
-- UI base: Button, Pill, Toggle, Card, Modal, Precio. Rutas lazy: /login, /, /cuenta, /admin, 404. /pedidos, /ultima-hora y /mapa muestran "Proximamente".
-- Sigue: Bloque 2 (Pide para tu Olla, Última Hora, flujo Aparta-Revisa-Paga). Sin verificar aún en navegador/Playwright.
+# Progreso — Bloque 2 listo (falta tu revisión en el navegador)
+- Pacto compacto (cabe en 720 px, "Jamás" visible) con línea de etiqueta Cría / Abono. Selector de plaza en la barra superior: Barranquilla · Piloto Activo, Bogotá, Medellín, CDMX (moneda y lotes demo por plaza).
+- `/ultima-hora`: catálogo con fotos reales (Barranquilla) o ícono (otras plazas), precio tachado, reloj/barra, filtros por categoría y Cocina/Cría. Apartar gratis genera código `OLLA-###`, descuenta stock en localStorage; comprador revisa y se lleva o rechaza.
+- `/pedidos`: comprador encarga (qué, kilos, hora, presupuesto); vendedor responde en 2 toques y comprador elige oferta.
+- Vendedor: publicar en 3 pasos + etiqueta rápida, Modo Sin Celular (aviso al comprador), apartados con perfil del comprador, retirar lotes. Inicio con cifras vivas por rol.
+- Datos: `store.js` v2, `semilla.js`, `lib/acciones.js` (reglas puras). Lotes demo se renuevan al abrir; los vencidos se ocultan solos. `npm run build` OK (JS inicial 93 KB gz). Sin Playwright aún.
+- Sigue: Bloque 3 (estándares dinámicos, puestos, mapa Leaflet).

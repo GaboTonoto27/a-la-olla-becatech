@@ -1,8 +1,17 @@
 // Única puerta de entrada a localStorage. Si cambia la forma de los datos, sube VERSION.
-const VERSION = 1
+const VERSION = 2
 const CLAVE = 'alaolla:v' + VERSION
 
-const INICIAL = { usuarioId: null, modo: null, pactos: {} }
+const INICIAL = {
+  usuarioId: null,
+  modo: null,
+  pactos: {},
+  ciudadId: 'bq',
+  sinCelular: {},
+  lotes: null,
+  apartados: null,
+  pedidos: null,
+}
 
 export function leer() {
   try {

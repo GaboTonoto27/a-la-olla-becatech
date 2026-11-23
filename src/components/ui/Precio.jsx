@@ -1,18 +1,22 @@
-const formato = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 })
+import { dinero } from '../../lib/dinero.js'
 
+// Se mantiene por compatibilidad: formato en pesos colombianos.
 export function pesos(valor) {
-  return '$' + formato.format(valor)
+  return dinero(valor, 'bq')
 }
 
 // Precio normal tachado (pequeño) + precio de rescate grande en verde.
-export default function Precio({ normal, rescate, unidad = 'kg' }) {
+export default function Precio({ normal, rescate, unidad = 'kg', ciudad = 'bq' }) {
   return (
-    <div className="flex items-baseline gap-2">
+    <div className="flex flex-wrap items-baseline gap-x-2">
       {normal != null && (
-        <span className="text-sm text-piedra line-through">{pesos(normal)}</span>
+        <span className="text-sm text-piedra line-through">
+          <span className="sr-only">Precio normal </span>
+          {dinero(normal, ciudad)}
+        </span>
       )}
       <span className="font-titulo text-3xl font-extrabold text-olla">
-        {pesos(rescate)}
+        {dinero(rescate, ciudad)}
         <span className="text-base font-bold">/{unidad}</span>
       </span>
     </div>

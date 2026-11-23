@@ -25,11 +25,11 @@ export default function Modal({ titulo, cerrable = false, onCerrar, children, pi
         aria-label={titulo}
         className="flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-3xl border border-borde bg-marfil sm:rounded-3xl"
       >
-        <div className="overflow-y-auto px-5 pb-2 pt-6">
-          <h2 className="mb-4 text-2xl text-olla">{titulo}</h2>
+        <div className="overflow-y-auto px-5 pb-2 pt-5">
+          <h2 className="mb-2 text-2xl text-olla">{titulo}</h2>
           {children}
         </div>
-        {pie && <div className="border-t border-borde bg-white px-5 py-4 sm:rounded-b-3xl">{pie}</div>}
+        {pie && <div className="border-t border-borde bg-white px-5 py-3 sm:rounded-b-3xl">{pie}</div>}
       </div>
     </div>
   )

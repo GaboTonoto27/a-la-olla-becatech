@@ -7,6 +7,8 @@ const Login = lazy(() => import('./pages/Login.jsx'))
 const Inicio = lazy(() => import('./pages/Inicio.jsx'))
 const Cuenta = lazy(() => import('./pages/Cuenta.jsx'))
 const Proximamente = lazy(() => import('./pages/Proximamente.jsx'))
+const UltimaHora = lazy(() => import('./pages/UltimaHora.jsx'))
+const PidePaTuOlla = lazy(() => import('./pages/PidePaTuOlla.jsx'))
 const NoEncontrado = lazy(() => import('./pages/NoEncontrado.jsx'))
 const AdminInicio = lazy(() => import('./pages/admin/AdminInicio.jsx'))
 
@@ -38,8 +40,8 @@ export default function App() {
         <Route element={<RequiereSesion />}>
           <Route element={<AppShell />}>
             <Route path="/" element={<SoloUsuarios><Inicio /></SoloUsuarios>} />
-            <Route path="/pedidos" element={<SoloUsuarios><Proximamente titulo="Pide pa' tu olla" /></SoloUsuarios>} />
-            <Route path="/ultima-hora" element={<SoloUsuarios><Proximamente titulo="Última hora" /></SoloUsuarios>} />
+            <Route path="/pedidos" element={<SoloUsuarios><PidePaTuOlla /></SoloUsuarios>} />
+            <Route path="/ultima-hora" element={<SoloUsuarios><UltimaHora /></SoloUsuarios>} />
             <Route path="/mapa" element={<SoloUsuarios><Proximamente titulo="Mapa de puestos" /></SoloUsuarios>} />
             <Route path="/cuenta" element={<SoloUsuarios><Cuenta /></SoloUsuarios>} />
             <Route path="/admin/*" element={<SoloAdmin><AdminInicio /></SoloAdmin>} />

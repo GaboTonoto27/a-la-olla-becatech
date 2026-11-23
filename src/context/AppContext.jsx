@@ -5,18 +5,9 @@ import * as reglas from '../lib/acciones.js'
 import * as social from '../lib/social.js'
 import * as dev from '../lib/devoluciones.js'
 import { listaPuestos } from '../data/puestos.js'
+import { generarRespuestaContextual } from '../lib/respuestasChat.js'
 
 const AppContext = createContext(null)
-
-// Respuestas de mentiras piadosas pa' que el jurado vea el chat vivo cuando el otro lado es una cuenta de muestra.
-function respuestaDemo(texto) {
-  const t = texto.toLowerCase()
-  if (t.includes('15 min') || t.includes('guard')) return "Listo, te lo guardo 15 minutos. Pasa con tu código."
-  if (t.includes('saliendo') || t.includes('camino')) return 'Dale, te espero. Lo tengo apartado aparte.'
-  if (t.includes('llegu')) return 'Ya te atiendo, un momento.'
-  if (t.includes('recoger') || t.includes('listo')) return "Perfecto, aquí lo tienes listo pa' revisar."
-  return 'Recibido. Te confirmo en un momento.'
-}
 
 export function AppProvider({ children }) {
   const [estado, setEstado] = useState(() => reglas.iniciar(leer()))
@@ -180,7 +171,19 @@ export function AppProvider({ children }) {
           setTimeout(() => {
             const vivo = ref.current.chats.find((x) => x.id === chatId)
             if (!vivo || vivo.bloqueadoPor) return
-            const msg = { id: `m-r${Date.now()}`, de: otro, texto: respuestaDemo(texto), t: Date.now(), auto: true }
+            const puesto = puestos.find((p) => p.id === otro)
+            const esPuesto = otro === vivo.vendedorId
+            const ultima = [...vivo.mensajes].reverse().find((m) => m.auto && m.de === otro)?.texto ?? ''
+            const est = estandaresDe(otro)
+            const respuesta = generarRespuestaContextual(texto, {
+              nombre: puesto?.nombre ?? puesto?.pedidoComo ?? social.nombreVisible(cuentaOtro) ?? 'el puesto',
+              esPuesto,
+              nevera: Boolean(est.frio),
+              nequi: Boolean(est.nequi) || (puesto?.pagos ?? []).some((p) => /nequi/i.test(p)),
+              codigo: (vivo.contexto ?? '').match(/OLLA-\d+/)?.[0] ?? null,
+              ultima,
+            })
+            const msg = { id: `m-r${Date.now()}`, de: otro, texto: respuesta, t: Date.now(), auto: true }
             const nuevo = { ...ref.current, chats: ref.current.chats.map((x) => (x.id === chatId ? { ...x, mensajes: [...x.mensajes, msg] } : x)) }
             ref.current = nuevo
             setEstado(nuevo)
@@ -189,7 +192,7 @@ export function AppProvider({ children }) {
       }
       return r
     },
-    [aplicar, avisarAdmin],
+    [aplicar, avisarAdmin, puestos, estandaresDe],
   )
 
   const denunciar = useCallback(

@@ -7,7 +7,6 @@ import Card from '../ui/Card.jsx'
 import Button from '../ui/Button.jsx'
 import Chip from '../ui/Chip.jsx'
 import Contador from '../ui/Contador.jsx'
-import { AvisoVentaBloqueada } from '../layout/AvisoPlaza.jsx'
 import { cant } from '../../lib/unidades.js'
 
 const UNIDADES = ['kg', 'lb', 'bolsa', 'unidad']
@@ -26,7 +25,7 @@ const VACIO = {
 
 // Publicar en 3 pasos: 1) qué es, 2) cuántos, 3) precio de rescate + etiqueta rápida.
 export default function PublicarLote() {
-  const { ciudad, publicarLote, ventaBloqueada } = useApp()
+  const { ciudad, publicarLote } = useApp()
   const [paso, setPaso] = useState(1)
   const [f, setF] = useState(VACIO)
   const [otro, setOtro] = useState(false)
@@ -60,8 +59,6 @@ export default function PublicarLote() {
     setF(VACIO)
     setPaso(1)
   }
-
-  if (ventaBloqueada) return <AvisoVentaBloqueada />
 
   if (publicado) {
     return (

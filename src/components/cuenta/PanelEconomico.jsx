@@ -6,6 +6,7 @@ import { PLANES, resumenSemana } from '../../lib/economia.js'
 import Card from '../ui/Card.jsx'
 import Button from '../ui/Button.jsx'
 import Pill from '../ui/Pill.jsx'
+import Metodologia from '../ui/Metodologia.jsx'
 
 function Cifra({ valor, etiqueta }) {
   return (
@@ -122,6 +123,7 @@ export default function PanelEconomico() {
       <Button icono={bajando ? Loader2 : FileDown} className="w-full" onClick={descargar} disabled={bajando}>
         {bajando ? 'Armando tu PDF…' : 'Descargar reporte semanal (PDF)'}
       </Button>
+      <Metodologia />
     </Card>
   )
 }

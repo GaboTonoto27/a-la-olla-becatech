@@ -109,7 +109,7 @@ export function AppProvider({ children }) {
 
   // Google y Facebook simulados: la persona confirma sus datos y entra con su propio perfil.
   const entrarSimulado = useCallback(
-    ({ proveedor, nombre, correo, rol }) => {
+    ({ proveedor, nombre, correo, barrio, rol }) => {
       const existe = ref.current.cuentas.find((c) => social.normalizarCorreo(c.correo) === social.normalizarCorreo(correo))
       if (existe) {
         const r = social.estadoEntrada(existe)
@@ -118,7 +118,7 @@ export function AppProvider({ children }) {
       }
       const vendedor = rol === 'vendedor' || rol === 'ambos'
       const r = aplicar(social.crearCuenta, {
-        proveedor, nombre, correo, rol, perfilComprador: 'hogar',
+        proveedor, nombre, correo, barrio, rol, perfilComprador: 'hogar',
         puesto: vendedor ? { nombre: `Puesto de ${nombre.trim().split(' ')[0]}`, formal: false, plan: 'popular', zona: true, nequi: false, sinCelular: false } : null,
       })
       if (r.ok) entrarCon(r.cuenta)
@@ -180,7 +180,7 @@ export function AppProvider({ children }) {
           setTimeout(() => {
             const vivo = ref.current.chats.find((x) => x.id === chatId)
             if (!vivo || vivo.bloqueadoPor) return
-            const msg = { id: `m-r${Date.now()}`, de: otro, texto: respuestaDemo(texto), t: Date.now() }
+            const msg = { id: `m-r${Date.now()}`, de: otro, texto: respuestaDemo(texto), t: Date.now(), auto: true }
             const nuevo = { ...ref.current, chats: ref.current.chats.map((x) => (x.id === chatId ? { ...x, mensajes: [...x.mensajes, msg] } : x)) }
             ref.current = nuevo
             setEstado(nuevo)
@@ -249,7 +249,6 @@ export function AppProvider({ children }) {
     cuentaPorId,
     estandaresDe,
     cambiarEstandar,
-    ventaBloqueada: false,
     usuario,
     miPuesto,
     modo,

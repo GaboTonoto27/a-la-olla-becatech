@@ -16,7 +16,7 @@ const ROLES = [
 export default function OAuthModal({ proveedor, onCerrar }) {
   const { entrarSimulado } = useApp()
   const nombreProv = proveedor === 'google' ? 'Google' : 'Facebook'
-  const [f, setF] = useState({ nombre: '', correo: '', rol: 'comprador' })
+  const [f, setF] = useState({ nombre: '', correo: '', barrio: '', rol: 'comprador' })
   const [error, setError] = useState('')
 
   const enviar = (e) => {
@@ -49,6 +49,10 @@ export default function OAuthModal({ proveedor, onCerrar }) {
         <div>
           <label htmlFor="oa-correo" className="mb-1 block text-base font-bold">Tu correo</label>
           <input id="oa-correo" type="email" className={campo} value={f.correo} onChange={(e) => setF({ ...f, correo: e.target.value })} autoComplete="email" />
+        </div>
+        <div>
+          <label htmlFor="oa-barrio" className="mb-1 block text-base font-bold">Tu barrio <span className="font-medium text-piedra">(opcional)</span></label>
+          <input id="oa-barrio" className={campo} value={f.barrio} onChange={(e) => setF({ ...f, barrio: e.target.value })} placeholder="Escribe tu barrio o sector" autoComplete="off" />
         </div>
         <div>
           <p className="mb-2 text-base font-bold">¿Qué vas a hacer?</p>

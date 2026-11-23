@@ -9,10 +9,12 @@ import TabReembolsos from './TabReembolsos.jsx'
 import TabUsuarios from './TabUsuarios.jsx'
 import TabTickets from './TabTickets.jsx'
 import TabExpansion from './TabExpansion.jsx'
+import TabAnalitica from './TabAnalitica.jsx'
 
 const TABS = [
   { id: 'resumen', etiqueta: 'Resumen y Sostenibilidad' },
   { id: 'denuncias', etiqueta: 'Denuncias y Calidad' },
+  { id: 'analitica', etiqueta: 'Analítica y Data Science' },
   { id: 'reembolsos', etiqueta: 'Reembolsos y Devoluciones' },
   { id: 'usuarios', etiqueta: 'Usuarios y Moderación' },
   { id: 'tickets', etiqueta: 'Tickets de soporte' },
@@ -125,6 +127,7 @@ export default function AdminInicio() {
 
       {tab === 'resumen' && <TabResumen />}
       {tab === 'denuncias' && <TabDenuncias />}
+      {tab === 'analitica' && <TabAnalitica />}
       {tab === 'reembolsos' && <TabReembolsos />}
       {tab === 'usuarios' && <TabUsuarios />}
       {tab === 'tickets' && <TabTickets />}

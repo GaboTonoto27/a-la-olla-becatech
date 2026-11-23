@@ -5,6 +5,7 @@ import { totalesDevueltos } from '../../lib/devoluciones.js'
 import { COSTOS_MES, COSTO_TOTAL_MES, CUOTA_FORMAL, META_PUESTOS, PROMEDIO_POPULAR, kilosDe, sostenibilidad } from '../../lib/economia.js'
 import Card from '../../components/ui/Card.jsx'
 import Pill from '../../components/ui/Pill.jsx'
+import Metodologia from '../../components/ui/Metodologia.jsx'
 
 function Cifra({ valor, etiqueta }) {
   return (
@@ -49,6 +50,7 @@ export default function TabResumen() {
 
   return (
     <div className="space-y-5">
+      <Metodologia />
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Cifras globales">
         <Cifra valor={`${String(Math.round(datos.kg * 10) / 10).replace('.', ',')} kg`} etiqueta="Kilos rescatados" />
         <Cifra valor={dinero(datos.cop)} etiqueta="Plata recuperada (COP)" />

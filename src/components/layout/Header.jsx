@@ -14,7 +14,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-borde bg-marfil/95 backdrop-blur">
       <div className="mx-auto flex min-h-[64px] max-w-5xl items-center gap-3 px-4">
-        <Link to={esAdmin ? '/admin' : '/'} className="font-titulo text-2xl font-extrabold text-olla">
+        <Link to={esAdmin ? '/admin' : '/'} className="inline-flex min-h-[48px] items-center font-titulo text-2xl font-extrabold text-olla">
           A la Olla
         </Link>
 
@@ -26,8 +26,8 @@ export default function Header() {
                 to={to}
                 end={fin}
                 className={({ isActive }) =>
-                  `rounded-full px-4 py-2 text-base font-bold ${
-                    isActive ? 'bg-[#E7F1EA] text-olla' : 'text-piedra hover:text-carbon'
+                  `inline-flex min-h-[48px] items-center rounded-full px-4 text-base font-bold ${
+                    isActive ? 'bg-[#E7F1EA] text-olla' : 'text-piedra hover:bg-white hover:text-carbon'
                   }`
                 }
               >

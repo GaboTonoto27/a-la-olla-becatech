@@ -46,7 +46,7 @@ function Leyenda({ vende }) {
 }
 
 export default function Mapa() {
-  const { usuario, modo, ciudad, lotes, apartados, pedidos, estandaresDe, ventaBloqueada, puestosDe, compradoresDe } = useApp()
+  const { usuario, modo, ciudad, lotes, apartados, pedidos, estandaresDe, puestosDe, compradoresDe } = useApp()
   const ahora = useAhora(60000)
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -216,7 +216,6 @@ export default function Mapa() {
 
       <section ref={listaRef} className="space-y-3" aria-label={vende ? 'Pedidos cercanos' : 'Puestos cercanos'}>
         <h2 className="text-2xl">{vende ? "Pedidos pa' la olla" : 'Puestos de la plaza'}</h2>
-        {ventaBloqueada && vende && <p className="text-base font-semibold text-ambar">Aquí puedes mirar, pero no responder: tu puesto opera en Barranquilla.</p>}
         {filasConDistancia.length === 0 && <p className="text-base text-piedra">{vende ? 'Por ahora no hay pedidos abiertos.' : 'No hay puestos registrados en esta plaza.'}</p>}
         <ul className="space-y-3">
           {filasConDistancia.map((f) => {
@@ -263,7 +262,7 @@ export default function Mapa() {
                         {abierto === p.id ? (
                           <PedidoVendedor p={p} />
                         ) : (
-                          <Button className="w-full" disabled={ventaBloqueada} onClick={() => setAbierto(p.id)}>
+                          <Button className="w-full" onClick={() => setAbierto(p.id)}>
                             Responder pedido
                           </Button>
                         )}

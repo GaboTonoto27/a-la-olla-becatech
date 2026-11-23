@@ -93,6 +93,7 @@ export default function Chat() {
               <p className={`max-w-[85%] rounded-2xl px-4 py-2 text-base ${mio ? 'bg-olla text-white' : 'border border-borde bg-marfil'}`}>
                 {m.texto}
                 <span className={`mt-0.5 block text-xs ${mio ? 'text-white/80' : 'text-piedra'}`}>{hora(m.t)}</span>
+                {m.auto && <span className="mt-1 block text-xs font-semibold text-piedra">Respuesta automática de prototipo · En operación real contesta el vendedor</span>}
               </p>
             </div>
           )

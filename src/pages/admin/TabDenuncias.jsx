@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Gavel, Mail, Sparkles } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { ETIQUETA_MEDIDA, sugerirMedida } from '../../lib/copiloto.js'
+import { scoreRiesgo } from '../../lib/analitica.js'
 import Card from '../../components/ui/Card.jsx'
 import Button from '../../components/ui/Button.jsx'
 import Pill from '../../components/ui/Pill.jsx'
@@ -72,13 +73,41 @@ function Bandeja() {
   )
 }
 
+const TONO_RIESGO = { alto: 'tomate', medio: 'ambar', bajo: 'olla' }
+const COLOR_RIESGO = { alto: 'bg-tomate', medio: 'bg-ambar', bajo: 'bg-olla' }
+
+function Riesgo({ r }) {
+  return (
+    <div className="space-y-2 border-t border-[#B5D9E3] pt-2">
+      <p className="flex flex-wrap items-center gap-2 text-base font-bold">
+        Puntaje de riesgo: {r.total} de 100
+        <Pill tono={TONO_RIESGO[r.nivel]}>Riesgo {r.nivel}</Pill>
+      </p>
+      <div className="h-3 overflow-hidden rounded-full bg-white" role="presentation">
+        <div className={`h-full rounded-full ${COLOR_RIESGO[r.nivel]}`} style={{ width: `${r.total}%` }} />
+      </div>
+      <ul className="space-y-1 text-sm">
+        {r.partes.map((p) => (
+          <li key={p.id} className="flex justify-between gap-3">
+            <span>{p.etiqueta} <span className="text-piedra">({p.nota})</span></span>
+            <b>{p.valor} / {p.max}</b>
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-piedra">Modelo heurístico local, sin costo ni envío de datos. Está listo pa' cambiarse por aprendizaje automático cuando haya historial real.</p>
+    </div>
+  )
+}
+
 function Denuncia({ d }) {
-  const { cuentaPorId, guardarNotas, aplicarMedida } = useApp()
+  const { cuentaPorId, guardarNotas, aplicarMedida, apartados } = useApp()
   const [notas, setNotas] = useState({ notaComprador: d.notaComprador, notaVendedor: d.notaVendedor })
   const [guardado, setGuardado] = useState(false)
   const objetivo = cuentaPorId(d.objetivoId)
   const strikes = objetivo?.strikes ?? 0
   const sug = sugerirMedida(d.gravedad, strikes)
+  const rechazos = apartados.filter((a) => a.vendedorId === d.objetivoId && a.estado === 'rechazado').length
+  const riesgo = scoreRiesgo({ gravedad: d.gravedad, motivos: d.motivos, strikes, rechazos })
   const resuelta = d.estado === 'resuelta'
 
   return (
@@ -111,6 +140,7 @@ function Denuncia({ d }) {
             <p className="flex items-center gap-2 text-base font-bold text-frio"><Sparkles size={18} aria-hidden="true" /> Copiloto de moderación</p>
             <p className="text-base">Sugiere: <b>{ETIQUETA_MEDIDA[sug.medida]}</b>. {sug.razon}</p>
             <p className="text-sm text-piedra">Es solo una sugerencia. La decisión es tuya.</p>
+            <Riesgo r={riesgo} />
           </div>
 
           <div className="space-y-2">

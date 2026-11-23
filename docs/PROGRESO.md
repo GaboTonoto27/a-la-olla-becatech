@@ -1,9 +1,7 @@
-# Progreso — Bloque 4 + 4 ajustes (falta tu revisión en el navegador)
-- Producto real: `/login` (Crear cuenta / Iniciar sesión, OAuth simulado), puesto en 1 pantalla con mapa/GPS, rol por cuenta, `/admin` solo pa' `admin@alaolla.co`, zona fija Ciudadela 20 de Julio. Mapa Leaflet con "Cómo llegar"/Waze, chat seguro, reseñas verificadas, denuncias, Asistente 24/7, tickets y PDF semanal (`jspdf` dinámico).
-- Ajuste 1: "Tu barrio" 100% libre y obligatorio (sin `datalist`, vacío, placeholder "Escribe tu barrio o sector"); `BARRIOS` eliminado.
-- Ajuste 2: correo estricto (`src/lib/verificacion.js`) + paso "Confirma tu correo" con código de 6 dígitos y reenvío a 30 s (5 intentos). La cuenta se crea solo con el código bueno. `enviarCodigoVerificacion` usa EmailJS REST por `fetch` si hay `VITE_EMAILJS_*`; si no, tarjeta "Simulación de correo recibido en [correo]" con el código.
-- Ajuste 3: devoluciones (`src/lib/devoluciones.js`, `devoluciones` en el store sin subir versión). `/cuenta`: "Mis compras" con "Solicitar devolución / reembolso" y estado en vivo; vendedor con "Garantía y devolución de cuota" (reembolso o saldo a favor). `/admin`: pestaña "Reembolsos y Devoluciones" (aprobar/rechazar con nota, campana y contador).
-- Lo aprobado se descuenta de: balance y PDF del vendedor, ahorro del comprador y totales/resultado del mes del Admin.
-- Ajuste 4: subtítulo de `/cuenta` sin nombre repetido ("Juguería / Fritos") y un solo punto en "…4:00 p. m. Atendemos ahora."
-- `npm run build` OK: JS inicial 103,6 kB gz (< 150); jsPDF y Leaflet en chunks aparte. Lógica de correo y devoluciones probada con script; Playwright NO corrido.
-- Pendiente: tu prueba en navegador, `git commit` y pulido final con Impeccable + Playwright.
+# Progreso — Cierre integral del prototipo (sin commit; listo pa' Vercel tras tu revisión)
+- Transparencia: etiqueta "Respuesta automática de prototipo" en `/chat` (mensajes `auto`) y desplegable "Metodología y alcance del prototipo" (campo / simulación / proyección) en `/cuenta` y `/admin`.
+- `/admin` ahora tiene 7 pestañas; nueva "Analítica y Data Science" (`src/lib/analitica.js`, `TabAnalitica.jsx`, solo CSS): KPIs en vivo, barra circular Cocina vs Cría, franjas horarias y simulador What-If (CO₂e con factor FAO 2,5 kg/kg citado).
+- Denuncias: puntaje de riesgo 0–100 explicable (palabras clave 50 + faltas 30 + rechazos 20), heurística local lista pa' ML.
+- Pulido: `ventaBloqueada` eliminada; "Tu barrio" opcional en modal Google/Facebook; enlaces del encabezado a 48 px; `¿Ayuda?` va dentro de la barra inferior en móvil (ya no tapa nada) y redondo en escritorio; interruptores con área táctil de 48 px.
+- QA Playwright (375x812 y 1280x800): login/OTP/Google, `/admin` bloqueado a compradores, rutas de comprador y vendedor, ajuste de precio, PDF jsPDF, 7 pestañas admin, recarga en `/ultima-hora` y 404: 0 errores de consola, 0 desborde horizontal.
+- `npm run build` OK: JS inicial 103,7 kB gz (< 150). Pendiente: tu revisión, `git commit`/`push` y Vercel.

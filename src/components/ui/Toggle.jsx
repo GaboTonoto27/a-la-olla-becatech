@@ -6,7 +6,7 @@ export default function Toggle({ activo, onChange, etiqueta, className = '' }) {
       aria-checked={activo}
       aria-label={etiqueta}
       onClick={() => onChange(!activo)}
-      className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border transition-colors ${
+      className={`relative inline-flex h-8 w-14 shrink-0 before:absolute before:-inset-2 before:content-[''] items-center rounded-full border transition-colors ${
         activo ? 'border-olla bg-olla' : 'border-stone-300 bg-stone-200'
       } ${className}`}
     >

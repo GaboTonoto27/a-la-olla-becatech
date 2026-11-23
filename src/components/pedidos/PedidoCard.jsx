@@ -25,7 +25,7 @@ function Resumen({ p }) {
 
 // Vista del vendedor: responde en 2 toques ("Responder" y luego aceptar o mandar su precio).
 export function PedidoVendedor({ p }) {
-  const { usuario, responderPedido, ventaBloqueada } = useApp()
+  const { usuario, responderPedido } = useApp()
   const [abierto, setAbierto] = useState(false)
   const [precio, setPrecio] = useState(p.presupuestoKg)
   const mia = p.ofertas.find((o) => o.vendedorId === usuario.id)
@@ -50,7 +50,7 @@ export function PedidoVendedor({ p }) {
       ) : mia ? (
         <p className="text-base font-semibold text-olla">Ya respondiste: {dinero(mia.precioKg, p.ciudad)}/kg. Esperando que el comprador elija.</p>
       ) : !abierto ? (
-        <Button className="w-full" disabled={ventaBloqueada} onClick={() => setAbierto(true)}>Responder</Button>
+        <Button className="w-full" onClick={() => setAbierto(true)}>Responder</Button>
       ) : (
         <div className="space-y-3 rounded-xl border border-borde bg-marfil p-3">
           <Button className="w-full" onClick={() => responderPedido(p.id, p.presupuestoKg, true)}>

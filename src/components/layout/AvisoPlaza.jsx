@@ -1,10 +1,10 @@
-import { Info, Lock } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import Card from '../ui/Card.jsx'
 
-// Cintillo en las plazas de muestra + aviso cuando un vendedor de Barranquilla mira otra ciudad.
+// Cintillo en las plazas de muestra.
 export default function AvisoPlaza() {
-  const { ciudad, ventaBloqueada } = useApp()
+  const { ciudad } = useApp()
   if (ciudad.piloto) return null
   return (
     <div className="space-y-3">
@@ -15,19 +15,6 @@ export default function AvisoPlaza() {
           locales. Precios en {ciudad.codigo} ({ciudad.moneda}), atendidos por la {ciudad.coordinador}.
         </p>
       </Card>
-      {ventaBloqueada && <AvisoVentaBloqueada />}
     </div>
-  )
-}
-
-export function AvisoVentaBloqueada() {
-  return (
-    <Card className="flex items-start gap-3 border-[#EBCFA6] bg-[#FBEFDD]">
-      <Lock size={22} className="mt-0.5 shrink-0 text-ambar" aria-hidden="true" />
-      <p className="text-base font-semibold">
-        Tu puesto opera solo en Barranquilla. Vuelve a Barranquilla para vender o cambia a 'Compro' para explorar cómo se
-        adapta A la Olla aquí.
-      </p>
-    </Card>
   )
 }

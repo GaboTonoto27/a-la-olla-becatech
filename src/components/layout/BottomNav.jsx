@@ -8,7 +8,7 @@ export default function BottomNav() {
   return (
     <nav
       aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-borde bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t pr-14 border-borde bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {pestanasPara(modo).map(({ to, etiqueta, icono: Icono, fin }) => (
         <NavLink

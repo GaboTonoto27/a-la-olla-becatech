@@ -1,0 +1,11 @@
+{
+  "name": "A la Olla",
+  "short_name": "A la Olla",
+  "description": "La comida buena de la plaza, a buen precio y antes de que se pierda.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F5",
+  "theme_color": "#1B5E3A",
+  "lang": "es-CO",
+  "icons": [{ "src": "/icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

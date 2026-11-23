@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --color-olla: #1B5E3A;
+  --color-olla-oscuro: #14472B;
+  --color-marfil: #FAF8F5;
+  --color-borde: #E7E2D8;
+  --color-tomate: #D9532F;
+  --color-frio: #0E7490;
+  --color-ambar: #B45309;
+  --color-carbon: #1C1F1D;
+  --color-piedra: #57534E;
+
+  --font-titulo: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-cuerpo: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--color-marfil);
+    color: var(--color-carbon);
+    font-family: var(--font-cuerpo);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  h1, h2, h3 { font-family: var(--font-titulo); font-weight: 800; line-height: 1.15; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid var(--color-olla); outline-offset: 2px; }
+}

@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { AlertCircle, CheckCircle2, ChefHat, Sprout } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ChefHat, Pencil, ShieldAlert, Sprout } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero, precioReferencia } from '../../lib/dinero.js'
 import { FORMULAS, calidadDeFormula, conPct, formulaQueCoincide, infoPrecio } from '../../lib/precios.js'
-import { CATEGORIAS, MOTIVOS, PRODUCTOS_RAPIDOS, USOS } from '../../data/semilla.js'
+import { CATEGORIAS, PRODUCTOS_RAPIDOS, USOS } from '../../data/semilla.js'
+import { OTROS, etiquetasPara } from '../../data/etiquetas.js'
 import Card from '../ui/Card.jsx'
 import Button from '../ui/Button.jsx'
 import Chip from '../ui/Chip.jsx'
@@ -16,8 +17,9 @@ const FALTA = 'Selecciona al menos una opción para continuar'
 // formula: % de la calculadora rápida que está activo (null = ninguno). calidad solo sale de Extra o Regular.
 const VACIO = {
   producto: '', cat: 'fruta', unidad: 'kg', cantidad: 5, normal: 0, rescate: 0, formula: null,
-  motivo: MOTIVOS[0], uso: 'Guiso', nivel: 'cocina', apto: false,
+  motivo: null, motivoOtro: '', uso: 'Guiso', usoOtro: '', nivel: 'cocina', apto: false,
 }
+const campoTexto = 'min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base'
 
 function Aviso({ texto, id }) {
   if (!texto) return null
@@ -76,16 +78,23 @@ export default function PublicarLote() {
   const cambiarFinal = (valor) => poner({ rescate: valor, formula: formulaQueCoincide(f.normal, valor, ciudad.id) })
 
   const cria = f.nivel === 'cria'
+  const usoOtros = f.nivel === 'otros'
   const calidad = f.formula != null ? calidadDeFormula(f.formula) : null
   const info = infoPrecio(f.normal, f.rescate, calidad)
   const cambioPct = f.normal > 0 ? Math.round((f.rescate / f.normal - 1) * 100) : 0
+  // Etiquetas rápidas (opcionales): cambian según destino y si hay rebaja real. Una elegida que ya no aplica se ignora.
+  const { clave: grupoEtiq, lista: etiquetas } = etiquetasPara({ cria, rebaja: info.rebaja })
+  const motivoActivo = f.motivo === OTROS || etiquetas.includes(f.motivo) ? f.motivo : null
+  const motivoFinal = motivoActivo === OTROS ? f.motivoOtro.trim() : motivoActivo
+  const usoFinal = cria ? 'Cría y abono' : usoOtros ? f.usoOtro.trim() : f.uso
 
   const publicar = () => {
     const e = {}
     if (!(f.normal > 0) || !(f.rescate > 0)) e.precio = 'Escribe tu precio base y el precio final.'
-    if (!f.motivo) e.motivo = FALTA
+    if (motivoActivo === OTROS && !f.motivoOtro.trim()) e.motivo = 'Escribe tu etiqueta o desmarca "Otros".'
     if (!f.nivel) e.nivel = FALTA
     else if (f.nivel === 'cocina' && !f.uso) e.uso = FALTA
+    else if (usoOtros && !f.usoOtro.trim()) e.uso = 'Escribe qué uso sugieres.'
     if (!f.apto) e.apto = 'Marca la confirmación para poder publicar.'
     setErr(e)
     if (Object.keys(e).length) return irAlError()
@@ -97,9 +106,9 @@ export default function PublicarLote() {
       normal: f.normal, // precio de referencia: la rebaja solo existe si el final queda por debajo
       rescate: f.rescate,
       calidad,
-      motivo: f.motivo,
-      uso: cria ? 'Cría y abono' : f.uso,
-      nivel: f.nivel,
+      motivo: motivoFinal || null,
+      uso: usoFinal,
+      nivel: cria ? 'cria' : 'cocina', // "Otros" cuenta como apto pa' consumo salvo que sea Pa' Cría / Abono
     })
     setPublicado(lote)
     setF(VACIO)
@@ -244,21 +253,40 @@ export default function PublicarLote() {
           </div>
 
           <div className="space-y-3 rounded-2xl border border-borde bg-marfil p-3">
-            <p className="text-base font-bold">Etiqueta rápida</p>
+            <p className="text-base font-bold">Etiqueta rápida <span className="font-medium text-piedra">(opcional)</span></p>
             <div className="space-y-1">
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Por qué está feo">
-                {MOTIVOS.map((m) => (
-                  <Chip key={m} activo={f.motivo === m} onClick={() => alternar('motivo', m)}>{m}</Chip>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Etiqueta rápida" data-grupo-etiqueta={grupoEtiq}>
+                {etiquetas.map((m) => (
+                  <Chip key={m} activo={motivoActivo === m} onClick={() => alternar('motivo', m)}>{m}</Chip>
                 ))}
+                <Chip icono={Pencil} activo={motivoActivo === OTROS} onClick={() => alternar('motivo', OTROS)}>{OTROS}</Chip>
               </div>
+              {motivoActivo === OTROS && (
+                <input
+                  value={f.motivoOtro}
+                  maxLength={40}
+                  onChange={(e) => { poner({ motivoOtro: e.target.value }); setErr((x) => ({ ...x, motivo: undefined })) }}
+                  placeholder="Escribe tu etiqueta"
+                  aria-label="Tu etiqueta"
+                  className={campoTexto}
+                />
+              )}
               <Aviso texto={err.motivo} />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-2">
+              <p className="text-base font-bold">Uso sugerido por el puesto <span className="font-medium text-piedra">(tú decides cómo aprovecharlo)</span></p>
               <div className="flex flex-wrap gap-2" role="group" aria-label="Pa' dónde va">
-                <Chip icono={ChefHat} activo={f.nivel === 'cocina'} onClick={() => alternar('nivel', 'cocina')}>Pa' Cocina / Pulpa</Chip>
+                <Chip icono={ChefHat} activo={f.nivel === 'cocina'} onClick={() => alternar('nivel', 'cocina')}>Pa' Cocina / Pulpa (100% sano)</Chip>
                 <Chip icono={Sprout} activo={cria} onClick={() => alternar('nivel', 'cria')}>Pa' Cría / Abono</Chip>
+                <Chip icono={Pencil} activo={usoOtros} onClick={() => alternar('nivel', 'otros')}>{OTROS}</Chip>
               </div>
               <Aviso texto={err.nivel} />
+              {cria && (
+                <p className="flex items-start gap-2 rounded-xl border border-[#EBCFA6] bg-[#FBEFDD] p-3 text-base font-semibold" role="note">
+                  <ShieldAlert size={20} className="mt-0.5 shrink-0 text-ambar" aria-hidden="true" />
+                  Solo pa' animales o abono. Nunca se vende como comida de mesa.
+                </p>
+              )}
             </div>
             {f.nivel === 'cocina' && (
               <div className="space-y-1">
@@ -267,6 +295,19 @@ export default function PublicarLote() {
                     <Chip key={u} activo={f.uso === u} onClick={() => alternar('uso', u)}>{u}</Chip>
                   ))}
                 </div>
+                <Aviso texto={err.uso} />
+              </div>
+            )}
+            {usoOtros && (
+              <div className="space-y-1">
+                <input
+                  value={f.usoOtro}
+                  maxLength={40}
+                  onChange={(e) => { poner({ usoOtro: e.target.value }); setErr((x) => ({ ...x, uso: undefined })) }}
+                  placeholder="¿Qué uso sugieres? Ej: ensaladas, mermelada, venta directa..."
+                  aria-label="Uso que sugieres"
+                  className={campoTexto}
+                />
                 <Aviso texto={err.uso} />
               </div>
             )}
@@ -287,16 +328,21 @@ export default function PublicarLote() {
           </div>
 
           {f.normal > 0 && f.rescate > 0 && (
-            <p className="rounded-xl border border-borde bg-white p-3 text-base" aria-live="polite" data-vista-previa>
-              <b>Así lo verá el comprador:</b> {dinero(f.rescate, ciudad.id)}/{f.unidad}{' · '}
-              {info.rebaja ? (
-                <><b className="text-[#A8391B]">Rebaja −{info.pct}%</b> (antes {dinero(f.normal, ciudad.id)})</>
-              ) : info.etiqueta ? (
-                <b className="text-olla">{info.etiqueta}</b>
-              ) : (
-                <span className="text-piedra">precio normal, sin rebaja</span>
+            <div className="rounded-xl border border-borde bg-white p-3 text-base" aria-live="polite" data-vista-previa>
+              <p>
+                <b>Así lo verá el comprador:</b> {dinero(f.rescate, ciudad.id)}/{f.unidad}{' · '}
+                {info.rebaja ? (
+                  <><b className="text-[#A8391B]">Rebaja −{info.pct}%</b> (antes {dinero(f.normal, ciudad.id)})</>
+                ) : info.etiqueta ? (
+                  <b className="text-olla">{info.etiqueta}</b>
+                ) : (
+                  <span className="text-piedra">precio normal, sin rebaja</span>
+                )}
+              </p>
+              {(motivoFinal || usoFinal) && (
+                <p className="text-piedra">{[motivoFinal, usoFinal ? `ideal pa' ${usoFinal.toLowerCase()}` : null].filter(Boolean).join(' · ')}</p>
               )}
-            </p>
+            </div>
           )}
 
           <div className="grid grid-cols-2 gap-2">

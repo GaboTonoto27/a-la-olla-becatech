@@ -27,7 +27,7 @@ export default function LoteCard({ lote, ahora, onApartar }) {
           </p>
           <h3 className="mt-0.5 text-2xl">{lote.producto}</h3>
           <p className="text-base text-piedra">
-            {lote.motivo} · ideal pa' {lote.uso.toLowerCase()}
+            {[lote.motivo, `ideal pa' ${lote.uso.toLowerCase()}`].filter(Boolean).join(' · ')}
           </p>
         </div>
 

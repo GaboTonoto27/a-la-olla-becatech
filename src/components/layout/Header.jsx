@@ -33,6 +33,7 @@ export default function Header() {
               >
                 {etiqueta}
                 {to === '/ultima-hora' && avisos.ultima && <Punto className="ml-1.5" texto="Tienes apartados por atender" />}
+                {to === '/chat' && avisos.chat > 0 && <Punto className="ml-1.5" texto={`${avisos.chat} ${avisos.chat === 1 ? "mensaje sin leer" : "mensajes sin leer"}`} />}
                 {to === '/pedidos' && avisos.pedidos && <Punto className="ml-1.5" texto="Te respondieron un pedido" />}
               </NavLink>
             ))}

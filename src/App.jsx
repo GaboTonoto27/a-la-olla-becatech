@@ -10,6 +10,7 @@ const UltimaHora = lazy(() => import('./pages/UltimaHora.jsx'))
 const PidePaTuOlla = lazy(() => import('./pages/PidePaTuOlla.jsx'))
 const Puestos = lazy(() => import('./pages/Puestos.jsx'))
 const PerfilPuesto = lazy(() => import('./pages/PerfilPuesto.jsx'))
+const Ganancias = lazy(() => import('./pages/Ganancias.jsx'))
 const Mapa = lazy(() => import('./pages/Mapa.jsx'))
 const NoEncontrado = lazy(() => import('./pages/NoEncontrado.jsx'))
 const Chats = lazy(() => import('./pages/Chats.jsx'))
@@ -46,6 +47,7 @@ export default function App() {
             <Route path="/" element={<SoloUsuarios><Inicio /></SoloUsuarios>} />
             <Route path="/pedidos" element={<SoloUsuarios><PidePaTuOlla /></SoloUsuarios>} />
             <Route path="/ultima-hora" element={<SoloUsuarios><UltimaHora /></SoloUsuarios>} />
+            <Route path="/ganancias" element={<SoloUsuarios><Ganancias /></SoloUsuarios>} />
             <Route path="/puestos" element={<SoloUsuarios><Puestos /></SoloUsuarios>} />
             <Route path="/puesto/:id" element={<SoloUsuarios><PerfilPuesto /></SoloUsuarios>} />
             <Route path="/mapa" element={<SoloUsuarios><Mapa /></SoloUsuarios>} />

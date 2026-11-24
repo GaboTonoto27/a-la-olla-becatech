@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
-import { ShoppingBasket, Zap, MapPin, Store } from 'lucide-react'
+import { ChefHat, ShoppingBasket, TrendingUp, Zap, MapPin, Store } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useAhora } from '../lib/useAhora.js'
 import { loteActivo } from '../lib/acciones.js'
 import { dinero } from '../lib/dinero.js'
+import { resumenSemana } from '../lib/economia.js'
 import { textoRestanteLote } from '../lib/horario.js'
 import AvisoHorario from '../components/layout/AvisoHorario.jsx'
 import Card from '../components/ui/Card.jsx'
@@ -23,7 +24,7 @@ function Cifra({ valor, etiqueta, to }) {
 }
 
 export default function Inicio() {
-  const { usuario, modo, ciudad, lotes, apartados, pedidos, miPuesto } = useApp()
+  const { usuario, modo, ciudad, lotes, apartados, pedidos, miPuesto, devoluciones, estandaresDe } = useApp()
   const ahora = useAhora(30000)
   const vende = modo === 'vendedor'
 
@@ -38,6 +39,7 @@ export default function Inicio() {
   )
   const misEncargos = pedidos.filter((p) => p.compradorId === usuario.id && p.estado !== 'cerrado').length
   const kilosSalvables = delaPlaza.reduce((s, l) => s + (l.unidad === 'kg' ? l.cantidad : 0), 0)
+  const semana = resumenSemana(apartados, usuario.id, true, miPuesto?.plan ?? 'popular', ahora, devoluciones)
   const pronto = [...delaPlaza].sort((a, b) => a.vence - b.vence).slice(0, 3)
 
   return (
@@ -84,31 +86,35 @@ export default function Inicio() {
       )}
 
       {vende ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <Pill tono="tomate" icono={Zap}>Última hora</Pill>
-            <h2 className="mt-3 text-2xl">{misLotes.length === 0 ? 'Publica tu primer lote' : 'Publica lo que te sobra'}</h2>
-            <p className="mb-4 mt-1 text-base text-piedra">En 3 pasos: qué es, cuántos kilos y el precio.</p>
-            <Button to="/ultima-hora" icono={Zap} variante="acento" className="w-full">Publicar sobrantes</Button>
+        <div className="space-y-4">
+          <Card className="space-y-2 border-[#F0C4B6] bg-[#FBE9E3]">
+            <Pill tono="tomate" icono={ChefHat}>Tu vitrina</Pill>
+            <h2 className="text-2xl">{misLotes.length === 0 ? "Pon pa' la olla tu primer lote" : "Pon pa' la olla lo que te sobra"}</h2>
+            <p className="text-base text-piedra">En 3 pasos: qué es, cuántos kilos y el precio. Sin fotos de fruta fea.</p>
+            <Button to="/ultima-hora" icono={ChefHat} variante="acento" className="w-full">Pon pa' la olla</Button>
           </Card>
-          <Card>
-            <Pill tono="olla" icono={ShoppingBasket}>Pedidos</Pill>
-            <h2 className="mt-3 text-2xl">Lo que están pidiendo</h2>
-            <p className="mb-4 mt-1 text-base text-piedra">{encargos.length} encargos esperan tu precio. Respondes en 2 toques.</p>
-            <Button to="/pedidos" variante="contorno" className="w-full">Ver pedidos</Button>
+          <Card className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Pill tono={miPuesto?.plan === 'formal' ? 'frio' : 'ambar'}>{miPuesto?.plan === 'formal' ? 'Plan Formal' : 'Plan Popular'}</Pill>
+              {estandaresDe(usuario.id).frio && <Pill tono="frio">Con nevera</Pill>}
+            </div>
+            <p className="text-lg font-bold">Esta semana: {String(semana.kilos).replace('.', ',')} kg rescatados · {dinero(semana.ingresos)} recuperados</p>
+            <Button to="/ganancias" variante="contorno" icono={TrendingUp} className="w-full sm:w-auto">Ver ganancias y consejos</Button>
           </Card>
-          <Card>
-            <Pill tono="frio" icono={MapPin}>Cerca de ti</Pill>
-            <h2 className="mt-3 text-2xl">Mira quién pide cerca</h2>
-            <p className="mb-4 mt-1 text-base text-piedra">Restaurantes, juguerías y hogares con pedidos, en el mapa.</p>
-            <Button to="/mapa" variante="contorno" icono={MapPin} className="w-full">Ver mapa</Button>
-          </Card>
-          <Card>
-            <Pill tono="olla" icono={Store}>Puestos</Pill>
-            <h2 className="mt-3 text-2xl">Los puestos de la plaza</h2>
-            <p className="mb-4 mt-1 text-base text-piedra">Quién tiene nevera, quién no y qué lotes hay hoy.</p>
-            <Button to="/puestos" variante="contorno" icono={Store} className="w-full">Ver puestos</Button>
-          </Card>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <Pill tono="olla" icono={ShoppingBasket}>Encargos</Pill>
+              <h2 className="mt-3 text-2xl">Lo que están pidiendo</h2>
+              <p className="mb-4 mt-1 text-base text-piedra">{encargos.length} encargos esperan tu precio. Respondes en 2 toques.</p>
+              <Button to="/pedidos" variante="contorno" className="w-full">Ver encargos</Button>
+            </Card>
+            <Card>
+              <Pill tono="frio" icono={MapPin}>Cerca de ti</Pill>
+              <h2 className="mt-3 text-2xl">Mira quién pide cerca</h2>
+              <p className="mb-4 mt-1 text-base text-piedra">Restaurantes, juguerías y hogares con encargos, en el mapa.</p>
+              <Button to="/mapa" variante="contorno" icono={MapPin} className="w-full">Ver mapa</Button>
+            </Card>
+          </div>
         </div>
       ) : (
         <>

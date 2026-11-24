@@ -57,7 +57,7 @@ export default function PanelEconomico() {
   return (
     <Card className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-2xl">{vendedor ? 'Tu semana en la plaza' : 'Tu semana de compras'}</h2>
+        <h2 className="text-2xl">{vendedor ? 'Tu semana de ventas' : 'Tu semana de compras'}</h2>
         {vendedor && <Pill tono={plan === 'formal' ? 'frio' : 'ambar'}>{PLANES[plan].nombre}</Pill>}
       </div>
 

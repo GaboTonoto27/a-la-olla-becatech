@@ -39,7 +39,7 @@ function Vendedor() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-3xl sm:text-4xl">Pedidos pa' la olla</h1>
+        <h1 className="text-3xl sm:text-4xl">Encargos pa' tu puesto</h1>
         <p className="mt-1 text-lg text-piedra">Esto es lo que necesitan cocinar. Respondes sin tomar fotos de nada.</p>
       </div>
       <AvisoPlaza />

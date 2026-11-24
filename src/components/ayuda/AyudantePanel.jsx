@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { CheckCircle2, Clock, LifeBuoy, Search } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
-import { HORARIO_SOPORTE, PREGUNTAS, buscarRespuesta, enHorario } from '../../data/ayuda.js'
+import { DESTACADAS, HORARIO_SOPORTE, buscarRespuesta, enHorario, preguntasPara } from '../../data/ayuda.js'
 import Modal from '../ui/Modal.jsx'
 import Button from '../ui/Button.jsx'
 import Chip from '../ui/Chip.jsx'
 
 const campo = 'min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base'
-const PILDORAS = ['apartar', 'pago', 'nivel', 'sincelular', 'costo']
 
 export default function AyudantePanel({ onCerrar }) {
-  const { ciudad, crearTicket, usuario } = useApp()
+  const { ciudad, crearTicket, usuario, modo } = useApp()
+  const lista = preguntasPara(modo)
+  const destacadas = DESTACADAS[modo] ?? []
   const [texto, setTexto] = useState('')
   const [respuesta, setRespuesta] = useState(null)
   const [sinResultado, setSinResultado] = useState(false)
@@ -19,11 +20,11 @@ export default function AyudantePanel({ onCerrar }) {
 
   const buscar = (e) => {
     e.preventDefault()
-    const r = buscarRespuesta(texto)
+    const r = buscarRespuesta(texto, lista)
     setRespuesta(r)
     setSinResultado(!r && texto.trim().length > 0)
   }
-  const ordenadas = [...PREGUNTAS.filter((p) => PILDORAS.includes(p.id)), ...PREGUNTAS.filter((p) => !PILDORAS.includes(p.id))]
+  const ordenadas = [...lista.filter((p) => destacadas.includes(p.id)), ...lista.filter((p) => !destacadas.includes(p.id))]
   const dentro = enHorario()
 
   return (

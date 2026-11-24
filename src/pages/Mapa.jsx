@@ -29,7 +29,7 @@ function Leyenda({ vende }) {
       {vende ? (
         <>
           <li className="flex items-center gap-1.5">{punto('#1B5E3A')} Tu puesto</li>
-          <li className="flex items-center gap-1.5">{punto('#D9532F', 'rounded-sm')} Pide pa' la olla</li>
+          <li className="flex items-center gap-1.5">{punto('#D9532F', 'rounded-sm')} Encargo de comprador</li>
         </>
       ) : (
         <>
@@ -161,7 +161,7 @@ export default function Mapa() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-3xl sm:text-4xl">{vende ? "Pedidos cerca de tu puesto" : 'Puestos cerca de ti'}</h1>
+        <h1 className="text-3xl sm:text-4xl">{vende ? "Encargos cerca de tu puesto" : 'Puestos cerca de ti'}</h1>
         <p className="mt-1 text-lg text-piedra">
           {vende
             ? "Restaurantes, juguerías y hogares que piden pa' la olla en " + ciudad.plaza + '.'
@@ -214,8 +214,8 @@ export default function Mapa() {
       <Leyenda vende={vende} />
       {!vende && <ComoFuncionanEstandares className="w-full sm:w-auto" />}
 
-      <section ref={listaRef} className="space-y-3" aria-label={vende ? 'Pedidos cercanos' : 'Puestos cercanos'}>
-        <h2 className="text-2xl">{vende ? "Pedidos pa' la olla" : 'Puestos de la plaza'}</h2>
+      <section ref={listaRef} className="space-y-3" aria-label={vende ? 'Encargos cercanos' : 'Puestos cercanos'}>
+        <h2 className="text-2xl">{vende ? "Encargos pa' tu puesto" : 'Puestos de la plaza'}</h2>
         {filasConDistancia.length === 0 && <p className="text-base text-piedra">{vende ? 'Por ahora no hay pedidos abiertos.' : 'No hay puestos registrados en esta plaza.'}</p>}
         <ul className="space-y-3">
           {filasConDistancia.map((f) => {

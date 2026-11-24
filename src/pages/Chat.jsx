@@ -7,7 +7,10 @@ import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import DenunciarModal from '../components/DenunciarModal.jsx'
 
-const RAPIDAS = ['Ya voy saliendo', '¿Me lo guardas 15 min?', 'Listo para recoger', 'Ya llegué al puesto']
+const RAPIDAS = {
+  comprador: ['Ya voy saliendo', '¿Me lo guardas 15 min?', 'Ya llegué al puesto', '¿Aceptas Nequi o solo efectivo?'],
+  vendedor: ['Listo para recoger', 'Te lo guardo 15 minutos', 'Ya está apartado, trae tu código', 'Te espero en el puesto'],
+}
 const AVISOS = {
   telefono: 'Por seguridad no se comparten teléfonos ni WhatsApp. Hablen por aquí.',
   bloqueado: 'Este chat está bloqueado.',
@@ -48,6 +51,8 @@ export default function Chat() {
   const silenciado = Boolean(chat.silenciado[usuario.id])
   const bloqueadoPorMi = chat.bloqueadoPor === usuario.id
   const bloqueado = Boolean(chat.bloqueadoPor)
+  // Mi rol depende de ESTE hilo: si el puesto del chat es el mío, hablo como vendedor; si no, como comprador.
+  const miRol = chat.vendedorId === usuario.id ? 'vendedor' : 'comprador'
 
   const enviar = (t) => {
     const r = enviarMensaje(chat.id, t)
@@ -93,7 +98,7 @@ export default function Chat() {
               <p className={`max-w-[85%] rounded-2xl px-4 py-2 text-base ${mio ? 'bg-olla text-white' : 'border border-borde bg-marfil'}`}>
                 {m.texto}
                 <span className={`mt-0.5 block text-xs ${mio ? 'text-white/80' : 'text-piedra'}`}>{hora(m.t)}</span>
-                {m.auto && <span className="mt-1 block text-xs font-semibold text-piedra">Respuesta automática de prototipo · En operación real contesta el vendedor</span>}
+                {m.auto && <span className="mt-1 block text-xs font-semibold text-piedra">Respuesta automática de prototipo · En operación real contesta el {m.rolAuto === 'comprador' ? 'comprador' : 'vendedor'}</span>}
               </p>
             </div>
           )
@@ -108,7 +113,7 @@ export default function Chat() {
       ) : (
         <>
           <div className="flex flex-wrap gap-2" role="group" aria-label="Respuestas rápidas">
-            {RAPIDAS.map((r) => (
+            {RAPIDAS[miRol].map((r) => (
               <button
                 key={r}
                 type="button"

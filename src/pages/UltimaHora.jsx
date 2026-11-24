@@ -132,7 +132,7 @@ function Vendedor({ ahora }) {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-3xl sm:text-4xl">Última hora</h1>
+        <h1 className="text-3xl sm:text-4xl">Pon pa' la olla</h1>
         <p className="mt-1 text-lg text-piedra">Publica lo que te sobra antes del cierre. Sin fotos de fruta fea.</p>
       </div>
       <AvisoPlaza />

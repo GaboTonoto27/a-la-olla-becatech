@@ -7,6 +7,9 @@ const tiene = (t, re) => re.test(t)
 const RE = {
   codigo: /\bolla[- ]?(\d{2,4})\b/,
   saludo: /^(hola|holi|buenas|buenos dias|buen dia|buenas tardes|buenas noches|que mas|quiubo|ey)\b/,
+  apartado: /\bapartad[oa]\b|\btrae tu codigo\b|\blleva tu codigo\b/,
+  espero: /\bte espero\b|\bte esperamos\b|\bte aguardo\b/,
+  camino: /\b(saliendo|salgo|en camino|voy en camino|ya voy)\b/,
   recoger: /\brecog|\brecoj|\bpasar por\b|\bpaso por\b/,
   tiempo: /\b(espera|esperas|esperame|guard\w*|minutos?|min|saliendo|salgo|camino|llego|llegue|llegando|llegamos|tarde|ya voy)\b/,
   pago: /\b(pago|pagar|pagas|nequi|efectivo|transferencia|transferir|qr|plata|tarjeta|daviplata)\b/,
@@ -28,6 +31,9 @@ export function intencion(texto) {
   if (tiene(t, RE.codigo)) return 'codigo'
   if (tiene(t, RE.saludo)) return 'saludo'
   if (tiene(t, RE.recoger)) return 'recoger'
+  if (tiene(t, RE.apartado)) return 'apartado'
+  if (tiene(t, RE.espero)) return 'espero'
+  if (tiene(t, RE.camino)) return 'camino'
   if (tiene(t, RE.tiempo)) return 'tiempo'
   if (tiene(t, RE.pago)) return 'pago'
   if (tiene(t, RE.calidad)) return 'calidad'
@@ -54,11 +60,24 @@ export function generarRespuestaContextual(texto, contexto = {}) {
       return esPuesto
         ? elegir([`¡Buenas! Le habla ${nombre}. ¿En qué le puedo ayudar?`, `¡Hola, qué más! ${nombre} a la orden. ¿Qué necesita?`], ultima)
         : elegir([`¡Buenas! Por aquí ${nombre}. ¿Cómo va todo?`, `¡Hola! Quedo atento, ¿qué me cuentas?`], ultima)
+    case 'apartado':
+      return esPuesto
+        ? elegir([`Sí, ya está apartado${codigo ? ` con tu código ${codigo}` : ''}. Pasa cuando quieras.`, 'Claro, aquí lo tengo apartado. Trae tu código y lo revisas.'], ultima)
+        : elegir(['Perfecto, ya voy con mi código y efectivo.', '¡Listo! Voy con el código en la mano y la plata en efectivo.'], ultima)
+    case 'espero':
+      return esPuesto
+        ? elegir(['Aquí te espero, con calma.', 'Dale, aquí estoy atento.'], ultima)
+        : elegir(['Dale, ya voy saliendo. Gracias por esperarme.', '¡Gracias! Ya casi llego.'], ultima)
+    case 'camino':
+      return esPuesto
+        ? elegir([`¡Listo! Aquí te lo tengo apartado${codigo ? ` con tu código ${codigo}` : ' con tu código'}.`, 'Dale, aquí te espero. Ya lo tengo separado.'], ultima)
+        : elegir(['Perfecto, aquí te espero.', 'Dale, sin afán.'], ultima)
     case 'recoger':
+      if (!esPuesto) return elegir(['¡Súper! Ya voy saliendo con mi código y efectivo.', '¡Qué bueno! Salgo ya con el código y la plata en efectivo.'], ultima)
       return elegir(["Perfecto, aquí lo tienes listo pa' revisar.", "Dale, ven cuando quieras que aquí lo tengo listo pa' que lo revises."], ultima)
     case 'tiempo':
       if (llego) return elegir(['Ya te atiendo, un momento.', '¡Ya te vi! Un momentico y te atiendo.'], ultima)
-      if (!esPuesto) return elegir(['Dale, aquí te espero.', 'Tranquilo, sin afán. Te espero.'], ultima)
+      if (!esPuesto) return elegir(['¡Gracias! Llego en menos de 15 minutos.', 'Dale, gracias por guardármelo. Ya llego.'], ultima)
       return codigo
         ? elegir([`Dale, te lo guardo un rato con el código ${codigo}. Pasa con él.`, `Listo, queda guardado con el ${codigo}. Muéstramelo cuando llegues.`], ultima)
         : elegir(['Dale, te lo guardo un rato. Pasa cuando puedas.', 'Listo, te lo dejo separado un momento.'], ultima)

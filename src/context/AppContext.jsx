@@ -183,7 +183,7 @@ export function AppProvider({ children }) {
               codigo: (vivo.contexto ?? '').match(/OLLA-\d+/)?.[0] ?? null,
               ultima,
             })
-            const msg = { id: `m-r${Date.now()}`, de: otro, texto: respuesta, t: Date.now(), auto: true }
+            const msg = { id: `m-r${Date.now()}`, de: otro, texto: respuesta, t: Date.now(), auto: true, rolAuto: esPuesto ? 'vendedor' : 'comprador' }
             const nuevo = { ...ref.current, chats: ref.current.chats.map((x) => (x.id === chatId ? { ...x, mensajes: [...x.mensajes, msg] } : x)) }
             ref.current = nuevo
             setEstado(nuevo)

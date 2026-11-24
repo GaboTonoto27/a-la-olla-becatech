@@ -1,7 +1,7 @@
 // Reglas de Última Hora y Pide pa' tu Olla. Todas son funciones puras: reciben el estado y devuelven el nuevo.
 import { proximoCierre } from './tiempo.js'
 import { PERFILES, semilla } from '../data/semilla.js'
-import { PERFILES_COMPRADOR } from '../data/seed.js'
+import { PERFILES_COMPRADOR, USUARIOS_DEMO } from '../data/seed.js'
 import { bloqueada, nombreVisible } from './social.js'
 
 const MIN = 60000
@@ -21,6 +21,13 @@ export function iniciar(e, ahora = Date.now()) {
   if (!e.lotes || !e.apartados || !e.pedidos || !e.cuentas || !e.chats) {
     return { ...e, ...semilla(ahora), ciudadId: 'bq' }
   }
+  // Las cuentas demo guardadas de versiones anteriores recuperan su rol real (Edwin ya no es "ambos").
+  const cuentasFijas = e.cuentas.map((c) => {
+    const base = c.demo ? USUARIOS_DEMO.find((u) => u.id === c.id) : null
+    return base && c.rol !== base.rol ? { ...c, rol: base.rol, modoInicial: base.modoInicial, etiqueta: base.etiqueta, detalle: base.detalle, perfilComprador: base.perfilComprador } : c
+  })
+  const modoFijo = cuentasFijas.find((c) => c.id === e.usuarioId && (c.rol === 'vendedor' || c.rol === 'comprador'))?.rol
+  e = { ...e, cuentas: cuentasFijas, ...(modoFijo ? { modo: modoFijo } : {}) }
   const frenados = new Set(e.cuentas.filter((c) => bloqueada(c, ahora)).map((c) => c.id))
   const lotes = e.lotes.map((l) =>
     l.demo && (l.vence <= ahora || l.retirado) && !frenados.has(l.vendedorId)

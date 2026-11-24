@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Gavel, Mail, Sparkles } from 'lucide-react'
+import { Gavel, Mail, Save, Send, Sparkles } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { ETIQUETA_MEDIDA, sugerirMedida } from '../../lib/copiloto.js'
 import { scoreRiesgo } from '../../lib/analitica.js'
@@ -16,19 +16,39 @@ const campo = 'w-full rounded-xl border border-borde bg-white p-3 text-base'
 const cuando = (t) => new Date(t).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
 
 function ConfigCorreo() {
-  const { adminCorreo, cambiarAdminCorreo } = useApp()
+  const { adminCorreo, guardarAdminCorreo, probarAlerta } = useApp()
+  const [correo, setCorreo] = useState(adminCorreo)
+  const [error, setError] = useState('')
+  const guardado = adminCorreo !== '' && correo.trim() === adminCorreo
+
+  const guardar = (e) => {
+    e.preventDefault()
+    setError(guardarAdminCorreo(correo) ? '' : 'Escribe un correo válido, por ejemplo nombre@correo.com.')
+  }
+
   return (
     <Card className="space-y-2">
-      <label htmlFor="admin-correo" className="block text-lg font-bold">Tu correo pa' recibir alertas</label>
-      <input
-        id="admin-correo"
-        type="email"
-        value={adminCorreo}
-        onChange={(e) => cambiarAdminCorreo(e.target.value)}
-        placeholder="tucorreo@ejemplo.com"
-        className="min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base"
-      />
-      <p className="text-sm text-piedra">Se guarda solo en este navegador. No usamos claves ni servidores de correo: el botón abre tu app de correo con el mensaje listo.</p>
+      <form onSubmit={guardar} className="space-y-2" noValidate>
+        <label htmlFor="admin-correo" className="block text-lg font-bold">Tu correo pa' recibir alertas</label>
+        <input
+          id="admin-correo"
+          type="email"
+          value={correo}
+          onChange={(e) => { setCorreo(e.target.value); setError('') }}
+          placeholder="tucorreo@ejemplo.com"
+          aria-invalid={Boolean(error)}
+          className="min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base"
+        />
+        {error && <p role="alert" className="text-sm font-bold text-[#A8391B]">{error}</p>}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button type="submit" icono={Save}>Guardar correo</Button>
+          <Button type="button" variante="contorno" icono={Send} disabled={!guardado} onClick={probarAlerta}>Probar alerta</Button>
+        </div>
+      </form>
+      <p className="text-sm text-piedra">
+        {guardado ? `Guardado: ${adminCorreo}. ` : 'Guarda tu correo pa' + "' poder probar la alerta. "}
+        Se queda solo en este navegador. No usamos servidores de correo: cada alerta tiene un botón que abre tu app de correo con el mensaje listo.
+      </p>
     </Card>
   )
 }
@@ -49,7 +69,7 @@ function Bandeja() {
               <li key={a.id}>
                 <Card className="space-y-2 !p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <PillGravedad nivel={a.gravedad} />
+                    <span className="flex flex-wrap items-center gap-2"><PillGravedad nivel={a.gravedad} />{a.prueba && <Pill>Prueba</Pill>}</span>
                     <span className="text-sm text-piedra">{cuando(a.creado)}</span>
                   </div>
                   <p className="text-sm text-piedra">Para: {a.para || adminCorreo || 'sin correo configurado'}</p>

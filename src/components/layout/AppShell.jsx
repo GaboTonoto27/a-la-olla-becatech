@@ -6,6 +6,7 @@ import Header from './Header.jsx'
 import BottomNav from './BottomNav.jsx'
 import PactoCalidad from '../PactoCalidad.jsx'
 import AyudanteFlotante from '../ayuda/AyudanteFlotante.jsx'
+import Toast from '../ui/Toast.jsx'
 
 export default function AppShell() {
   const { usuario, pactoAceptado } = useApp()
@@ -28,6 +29,7 @@ export default function AppShell() {
       {!esAdmin && <BottomNav />}
       {!esAdmin && <AyudanteFlotante />}
       {!pactoAceptado && <PactoCalidad />}
+      <Toast />
     </div>
   )
 }

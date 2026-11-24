@@ -6,6 +6,7 @@ import * as social from '../lib/social.js'
 import * as dev from '../lib/devoluciones.js'
 import { listaPuestos } from '../data/puestos.js'
 import { generarRespuestaContextual } from '../lib/respuestasChat.js'
+import { ETIQUETA_MEDIDA } from '../lib/copiloto.js'
 
 const AppContext = createContext(null)
 
@@ -13,6 +14,20 @@ export function AppProvider({ children }) {
   const [estado, setEstado] = useState(() => reglas.iniciar(leer()))
   const ref = useRef(estado)
   ref.current = estado
+
+  // Avisos flotantes: notificar(mensaje, 'exito' | 'info' | 'error'). Se van solos a los 3 segundos.
+  const [toast, setToast] = useState(null)
+  const temporizador = useRef(null)
+  const cerrarToast = useCallback(() => {
+    clearTimeout(temporizador.current)
+    setToast(null)
+  }, [])
+  const notificar = useCallback((mensaje, tipo = 'exito') => {
+    clearTimeout(temporizador.current)
+    setToast({ id: Date.now(), mensaje, tipo })
+    temporizador.current = setTimeout(() => setToast(null), 3000)
+  }, [])
+  useEffect(() => () => clearTimeout(temporizador.current), [])
 
   useEffect(() => guardar(estado), [estado])
 
@@ -199,9 +214,10 @@ export function AppProvider({ children }) {
     (d) => {
       const den = aplicar(social.crearDenuncia, d)
       avisarAdmin('A la Olla · Denuncia nueva', `${den.asunto} (gravedad ${den.gravedad})`)
+      notificar('Denuncia enviada. Ya le llegó a la coordinación')
       return den
     },
-    [aplicar, avisarAdmin],
+    [aplicar, avisarAdmin, notificar],
   )
 
   const crearResena = useCallback(
@@ -217,19 +233,23 @@ export function AppProvider({ children }) {
     (d) => {
       const t = aplicar(social.crearTicket, { autorId: ref.current.usuarioId, autorNombre: social.nombreVisible(cuentas.find((c) => c.id === ref.current.usuarioId)), ...d })
       avisarAdmin('A la Olla · Ticket de soporte', t.asunto)
+      notificar('Ticket enviado a soporte')
       return t
     },
-    [aplicar, avisarAdmin, cuentas],
+    [aplicar, avisarAdmin, cuentas, notificar],
   )
 
   const solicitarDevolucion = useCallback(
     (d) => {
       const yo = ref.current.cuentas.find((c) => c.id === ref.current.usuarioId)
       const r = aplicar(dev.solicitarDevolucion, { autorId: yo?.id, autorNombre: yo?.nombre, ...d })
-      if (r) avisarAdmin('A la Olla · Devolución solicitada', `${r.producto} · ${r.autorNombre}`)
+      if (r) {
+        avisarAdmin('A la Olla · Devolución solicitada', `${r.producto} · ${r.autorNombre}`)
+        notificar('Solicitud de devolución enviada')
+      }
       return r
     },
-    [aplicar, avisarAdmin],
+    [aplicar, avisarAdmin, notificar],
   )
 
   // ---- Avisos (punto terracota) ----
@@ -247,7 +267,23 @@ export function AppProvider({ children }) {
 
   const sinLeerAdmin = usuario?.rol === 'admin' ? social.sinLeerAdmin(estado) : 0
 
+  // Corre una acción y, si salió bien, confirma con un aviso.
+  const confirmar = (resultado, mensaje) => {
+    if (resultado) notificar(mensaje)
+    return resultado
+  }
+  const AVISO_APARTADO = {
+    confirmado: 'Apartado confirmado',
+    cancelado: 'Apartado cancelado. El lote volvió a la vitrina',
+    entregado: 'Entrega confirmada',
+    rechazado: 'Rechazaste el lote por calidad. Ya avisamos a la coordinación',
+  }
+  const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
   const valor = {
+    toast,
+    notificar,
+    cerrarToast,
     cuentas,
     cuentaPorId,
     estandaresDe,
@@ -267,7 +303,7 @@ export function AppProvider({ children }) {
     marcados: estado.marcados,
     devoluciones: estado.devoluciones ?? [],
     solicitarDevolucion,
-    resolverDevolucion: (id, decision, nota) => aplicar(dev.resolverDevolucion, id, decision, nota),
+    resolverDevolucion: (id, decision, nota) => confirmar(aplicar(dev.resolverDevolucion, id, decision, nota), decision === 'aprobado' ? 'Reembolso aprobado' : 'Solicitud rechazada con tu nota'),
     alertasCorreo: estado.alertasCorreo,
     adminCorreo: estado.adminCorreo,
     pushAdmin: estado.pushAdmin,
@@ -287,11 +323,15 @@ export function AppProvider({ children }) {
     sinCelular,
     cambiarSinCelular,
     editarPuesto: (id, cambios) => aplicar(social.editarPuesto, id, cambios),
-    publicarLote: (d) => aplicar(reglas.publicarLote, usuario, ciudad, d, miPuesto),
-    retirarLote: (id) => aplicar(reglas.retirarLote, id),
+    publicarLote: (d) => confirmar(aplicar(reglas.publicarLote, usuario, ciudad, d, miPuesto), "Lote publicado en 'Pon pa' la olla'"),
+    retirarLote: (id) => confirmar(aplicar(reglas.retirarLote, id), 'Lote retirado de tu vitrina'),
     ajustarPrecio: (id, nuevo) => aplicar(reglas.ajustarPrecio, id, nuevo),
-    apartar: (loteId, cantidad) => aplicar(reglas.apartar, usuario, loteId, cantidad),
-    actualizarApartado: (id, nuevo) => aplicar(reglas.actualizarApartado, id, nuevo),
+    apartar: (loteId, cantidad) => {
+      const a = aplicar(reglas.apartar, usuario, loteId, cantidad)
+      if (a) notificar(`Lote apartado. Tu código es ${a.codigo}`)
+      return a
+    },
+    actualizarApartado: (id, nuevo) => confirmar(aplicar(reglas.actualizarApartado, id, nuevo), AVISO_APARTADO[nuevo] ?? 'Apartado actualizado'),
     crearPedido: (d) => aplicar(reglas.crearPedido, usuario, ciudad.id, d),
     responderPedido: (id, precioKg, acepta) => aplicar(reglas.responderPedido, id, usuario, precioKg, acepta, miPuesto?.nombre),
     elegirOferta: (pedidoId, ofertaId) => aplicar(reglas.elegirOferta, pedidoId, ofertaId),
@@ -305,13 +345,25 @@ export function AppProvider({ children }) {
     crearResena,
     crearTicket,
     // Panel del Admin
-    aplicarMedida: (id, medida) => aplicar(social.aplicarMedida, id, medida),
-    guardarNotas: (id, notas) => aplicar(social.guardarNotas, id, notas),
-    reactivarCuenta: (id) => aplicar(social.reactivarCuenta, id),
-    revisarMarcado: (id) => aplicar(social.revisarMarcado, id),
-    atenderTicket: (id) => aplicar(social.atenderTicket, id),
-    marcarTodoLeido: () => aplicar(social.marcarTodoLeido),
-    cambiarAdminCorreo: (correo) => setEstado((e) => ({ ...e, adminCorreo: correo })),
+    aplicarMedida: (id, medida) => confirmar(aplicar(social.aplicarMedida, id, medida), `Medida aplicada: ${ETIQUETA_MEDIDA[medida] ?? medida}`),
+    guardarNotas: (id, notas) => confirmar(aplicar(social.guardarNotas, id, notas), 'Notas de la denuncia guardadas'),
+    reactivarCuenta: (id) => confirmar(aplicar(social.reactivarCuenta, id), 'Cuenta reactivada'),
+    revisarMarcado: (id) => confirmar(aplicar(social.revisarMarcado, id), 'Comentario marcado como revisado'),
+    atenderTicket: (id) => confirmar(aplicar(social.atenderTicket, id), 'Ticket marcado como atendido'),
+    marcarTodoLeido: () => confirmar(aplicar(social.marcarTodoLeido), 'Notificaciones marcadas como leídas'),
+    // Correo del Admin: se valida, se guarda en localStorage (con todo el estado) y se confirma con un aviso.
+    guardarAdminCorreo: (correo) => {
+      const limpio = String(correo ?? '').trim()
+      if (!CORREO_VALIDO.test(limpio)) return false
+      setEstado((e) => ({ ...e, adminCorreo: limpio }))
+      notificar('Correo de alertas guardado')
+      return true
+    },
+    probarAlerta: () => {
+      const a = aplicar(social.alertaPrueba)
+      if (a) notificar(`Alerta de prueba generada para ${a.para}`)
+      return a
+    },
     activarPush: async () => {
       if (!('Notification' in window)) return 'no-disponible'
       const permiso = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission()

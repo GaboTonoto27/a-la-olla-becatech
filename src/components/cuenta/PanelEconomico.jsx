@@ -40,7 +40,7 @@ function Barra({ etiqueta, valor, max, color }) {
 
 // Cifras reales: parten en $0 y suben solas con cada entrega confirmada ("Lo revisé y me lo llevo").
 export default function PanelEconomico() {
-  const { usuario, apartados, modo, miPuesto, devoluciones } = useApp()
+  const { usuario, apartados, modo, miPuesto, devoluciones, notificar } = useApp()
   const [bajando, setBajando] = useState(false)
   const vendedor = modo === 'vendedor'
   const plan = miPuesto?.plan ?? 'popular'
@@ -55,6 +55,7 @@ export default function PanelEconomico() {
         vendedor, nombre: usuario.nombre, puesto: miPuesto?.nombre ?? usuario.negocio, plan,
         planTexto: `${PLANES[plan].nombre} (${PLANES[plan].precio})`, resumen: r,
       })
+      notificar('Reporte semanal descargado')
     } finally {
       setBajando(false)
     }

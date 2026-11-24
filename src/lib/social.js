@@ -205,6 +205,23 @@ function alertaCorreo(e, { denunciaId, asunto, infractor, gravedad, evidencia },
   return { ...e, alertasCorreo: [alerta, ...e.alertasCorreo] }
 }
 
+// Alerta de prueba pa' comprobar que el correo del Admin está bien (no es una denuncia real).
+export function alertaPrueba(e, ahora = Date.now()) {
+  if (!e.adminCorreo) return { estado: e, resultado: null }
+  const alerta = {
+    id: uid('al'),
+    denunciaId: null,
+    prueba: true,
+    para: e.adminCorreo,
+    asunto: 'PRUEBA · Alerta de prueba de A la Olla',
+    infractor: 'Sin infractor (es solo una prueba)',
+    gravedad: 'baja',
+    evidencia: 'Si recibes esto, el correo de alertas quedó bien configurado.',
+    creado: ahora,
+  }
+  return { estado: { ...e, alertasCorreo: [alerta, ...e.alertasCorreo] }, resultado: alerta }
+}
+
 // tipo: sitio | chat | rechazo | engano
 export function crearDenuncia(e, d, ahora = Date.now()) {
   const { nivel, motivos } = clasificar(`${d.asunto} ${d.detalle}`, d.tipo)

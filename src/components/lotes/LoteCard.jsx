@@ -1,6 +1,6 @@
-import { Sprout, ChefHat, BadgeCheck } from 'lucide-react'
+import { Sprout, ChefHat, BadgeCheck, Star, TrendingDown } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
-import { descuento } from '../../lib/dinero.js'
+import { infoPrecio } from '../../lib/precios.js'
 import { NIVELES } from '../../data/semilla.js'
 import Precio from '../ui/Precio.jsx'
 import Pill from '../ui/Pill.jsx'
@@ -14,7 +14,8 @@ import { cant } from '../../lib/unidades.js'
 export default function LoteCard({ lote, ahora, onApartar }) {
   const { sinCelular, estandaresDe } = useApp()
   const frio = estandaresDe(lote.vendedorId).frio ?? lote.frio
-  const ahorro = descuento(lote.normal, lote.rescate)
+  // Rebaja solo si el precio final quedó por debajo del normal; si no, va la etiqueta de calidad (Extra o Regular).
+  const info = infoPrecio(lote.normal, lote.rescate, lote.calidad)
   const cria = lote.nivel === 'cria'
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-borde bg-white shadow-[0_1px_2px_rgba(28,31,29,0.04)]">
@@ -34,13 +35,15 @@ export default function LoteCard({ lote, ahora, onApartar }) {
           <Pill tono={cria ? 'ambar' : 'olla'} icono={cria ? Sprout : ChefHat}>
             {NIVELES[lote.nivel]}
           </Pill>
+          {info.rebaja && <Pill tono="tomate" icono={TrendingDown}>Rebaja −{info.pct}%</Pill>}
+          {info.etiqueta && <Pill icono={Star}>{info.etiqueta}</Pill>}
           <SelloFrio frio={Boolean(frio)} />
         </div>
 
         <div>
           <Precio normal={lote.normal} rescate={lote.rescate} unidad={lote.unidad} ciudad={lote.ciudad} />
           <p className="mt-1 text-sm font-semibold text-piedra">
-            {ahorro > 0 ? `Ahorras ${ahorro}% · ` : ''}quedan {cant(lote.cantidad, lote.unidad)}
+            {info.rebaja ? `Ahorras ${info.pct}% · ` : ''}quedan {cant(lote.cantidad, lote.unidad)}
           </p>
         </div>
 

@@ -12,7 +12,8 @@ export function kpis(apartados) {
   const rechazados = apartados.filter((a) => a.estado === 'rechazado')
   const conPrecio = vivos.filter((a) => a.normal > 0 && a.rescate > 0)
   const normal = conPrecio.reduce((s, a) => s + a.normal * a.cantidad, 0)
-  const rescate = conPrecio.reduce((s, a) => s + a.rescate * a.cantidad, 0)
+  // Extra y Regular (precio >= normal) no cuentan como descuento.
+  const rescate = conPrecio.reduce((s, a) => s + Math.min(a.rescate, a.normal) * a.cantidad, 0)
   const ventas = entregados.reduce((s, a) => s + a.total, 0)
   return {
     conversion: pct(entregados.length, apartados.length),

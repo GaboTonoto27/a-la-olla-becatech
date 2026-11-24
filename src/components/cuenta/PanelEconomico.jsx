@@ -8,11 +8,17 @@ import Button from '../ui/Button.jsx'
 import Pill from '../ui/Pill.jsx'
 import Metodologia from '../ui/Metodologia.jsx'
 
-function Cifra({ valor, etiqueta }) {
+// En móvil: la plata ocupa todo el ancho arriba y las otras dos van lado a lado; desde 640 px, las 3 en fila.
+function Cifra({ valor, etiqueta, ancha = false }) {
   return (
-    <div className="rounded-2xl border border-borde bg-white p-3">
-      <p className="font-titulo text-2xl font-extrabold leading-none text-olla sm:text-3xl">{valor}</p>
-      <p className="mt-2 text-sm font-semibold leading-tight text-piedra">{etiqueta}</p>
+    <div className={`min-w-0 rounded-2xl border border-borde bg-white px-4 py-3 ${ancha ? 'order-first col-span-2 sm:order-none sm:col-span-1' : ''}`}>
+      <p
+        className="font-titulo font-extrabold leading-none text-olla [font-variant-numeric:tabular-nums]"
+        style={{ fontSize: 'clamp(1.375rem, 6.5vw, 1.875rem)', overflowWrap: 'anywhere' }}
+      >
+        {valor}
+      </p>
+      <p className="mt-2 pr-1 text-sm font-semibold leading-tight text-piedra">{etiqueta}</p>
     </div>
   )
 }
@@ -61,17 +67,17 @@ export default function PanelEconomico() {
         {vendedor && <Pill tono={plan === 'formal' ? 'frio' : 'ambar'}>{PLANES[plan].nombre}</Pill>}
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {vendedor ? (
           <>
             <Cifra valor={`${String(r.kilos).replace('.', ',')} kg`} etiqueta="Kilos rescatados" />
-            <Cifra valor={dinero(r.ingresos)} etiqueta="Plata recuperada" />
+            <Cifra ancha valor={dinero(r.ingresos)} etiqueta="Plata recuperada" />
             <Cifra valor={r.entregas.length} etiqueta="Entregas completadas" />
           </>
         ) : (
           <>
             <Cifra valor={`${String(r.kilos).replace('.', ',')} kg`} etiqueta="Kilos comprados" />
-            <Cifra valor={dinero(r.ahorro)} etiqueta="Plata ahorrada" />
+            <Cifra ancha valor={dinero(r.ahorro)} etiqueta="Plata ahorrada" />
             <Cifra valor={r.entregas.length} etiqueta="Compras completadas" />
           </>
         )}

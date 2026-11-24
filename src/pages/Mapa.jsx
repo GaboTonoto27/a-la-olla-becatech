@@ -121,7 +121,7 @@ export default function Mapa() {
         id: ent.id, lat: f.punto[0], lng: f.punto[1], aprox: f.aprox, tipo: f.frio ? 'frio' : 'ambiente', titulo: ent.nombre,
         lineas: [f.frio ? 'Con nevera / cuarto frío' : 'Sin nevera · Al ambiente (consumo hoy)', f.nLotes ? `${cant(f.nLotes, 'lote')} hoy` : 'Sin lotes hoy', dist].filter(Boolean),
         aviso: f.aprox ? AVISO_ZONA : null,
-        accion: { etiqueta: f.nLotes ? 'Ver y apartar gratis' : 'Ver puesto', valor: `puesto:${ent.id}` },
+        accion: { etiqueta: ent.id === usuario.id ? 'Ver cómo se ve tu puesto' : f.nLotes ? 'Ver lotes' : 'Ver puesto', valor: `puesto:${ent.id}` },
       }
     })
     if (vende && miPuesto) {
@@ -270,8 +270,9 @@ export default function Mapa() {
                     ))
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
+                      {ent.id === usuario.id && <p className="col-span-2"><Pill tono="olla">Así ven tu puesto</Pill></p>}
                       <Button to={`/puesto/${ent.id}`} icono={f.nLotes ? undefined : Store} variante={f.nLotes ? 'primario' : 'contorno'} className="col-span-2 sm:col-span-1">
-                        {f.nLotes ? 'Ver y apartar gratis' : 'Ver puesto'}
+                        {ent.id === usuario.id ? 'Ver cómo se ve tu puesto' : f.nLotes ? 'Ver lotes' : 'Ver puesto'}
                       </Button>
                       <Button variante="suave" className="col-span-2 sm:col-span-1" onClick={() => { setEnfoque((e) => ({ id: ent.id, n: e.n + 1 })); cajaMapa.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }}>Ver en el mapa</Button>
                     </div>

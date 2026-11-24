@@ -8,8 +8,14 @@ import Modal from '../ui/Modal.jsx'
 import Button from '../ui/Button.jsx'
 import Contador from '../ui/Contador.jsx'
 
-// Apartar no cuesta nada: se paga en efectivo cuando el comprador revisa la comida en el puesto.
-export default function ApartarModal({ lote, onCerrar }) {
+// Apartar no tiene pago adelantado: el comprador paga cuando revisa la comida. Nunca se abre sobre un lote propio.
+export default function ApartarModal(props) {
+  const { usuario } = useApp()
+  if (props.lote.vendedorId === usuario.id) return null
+  return <ApartarContenido {...props} />
+}
+
+function ApartarContenido({ lote, onCerrar }) {
   const { apartar } = useApp()
   const [cantidad, setCantidad] = useState(Math.min(2, lote.cantidad))
   const [apartado, setApartado] = useState(null)
@@ -63,7 +69,7 @@ export default function ApartarModal({ lote, onCerrar }) {
       pie={
         <div className="space-y-1">
           <Button className="w-full" onClick={confirmar} icono={Banknote}>
-            Apartar gratis (Pago en efectivo al revisar)
+            Apartar · pagas al revisar
           </Button>
           <button type="button" onClick={onCerrar} className="min-h-[48px] w-full text-base font-semibold text-piedra underline">
             Ahora no
@@ -81,7 +87,7 @@ export default function ApartarModal({ lote, onCerrar }) {
           {cantidad} × {dinero(lote.rescate, lote.ciudad)}
         </p>
         <p className="font-titulo text-3xl font-extrabold text-olla">{dinero(total, lote.ciudad)}</p>
-        <p className="mt-1 text-base text-piedra">Se paga en efectivo cuando revises la comida. Hoy no se cobra nada.</p>
+        <p className="mt-1 text-base text-piedra">Apartas sin pago adelantado · Pagas al revisar (efectivo o transferencia, recogida en puesto o domicilio según el local).</p>
       </div>
       {error && <p className="mt-3 font-bold text-[#A8391B]">Ese lote ya no está disponible. Mira los demás.</p>}
     </Modal>

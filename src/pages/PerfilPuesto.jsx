@@ -81,6 +81,7 @@ export default function PerfilPuesto() {
   const exacta = ubicacionExacta(puesto, usuario, apartados, pedidos)
   const suyos = lotes.filter((l) => l.vendedorId === puesto.id && loteActivo(l, ahora) && l.cantidad > 0)
   const esMio = usuario.id === puesto.id && modo === 'vendedor'
+  const esDueno = usuario.id === puesto.id
   const delPuesto = resenas.filter((r) => r.puestoId === puesto.id)
   const nota = promedioPuesto(resenas, puesto.id)
 
@@ -90,6 +91,16 @@ export default function PerfilPuesto() {
         <ArrowLeft size={20} aria-hidden="true" /> Todos los puestos
       </Link>
       <AvisoPlaza />
+      {esDueno && (
+        <Card className="space-y-2 border-[#BCD8C5] bg-[#E7F1EA]">
+          <Pill tono="olla">Así ven tu puesto</Pill>
+          <p className="text-base">Esto es lo que ve un comprador. No puedes apartar tus propios lotes.</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {modo === 'vendedor' && <Button to="/ultima-hora">Gestionar en Pon pa' la olla</Button>}
+            <Button to="/cuenta" variante="contorno">Gestionar en Mi cuenta</Button>
+          </div>
+        </Card>
+      )}
 
       <div className="overflow-hidden rounded-2xl border border-borde bg-white">
         <div className={puesto.fotos.length > 1 ? 'grid grid-cols-2' : ''}>

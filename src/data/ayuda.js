@@ -5,12 +5,14 @@ export const PREGUNTAS = [
   {
     id: 'apartar',
     perfil: 'comprador',
-    pregunta: '¿Cómo aparto gratis?',
+    pregunta: '¿Cómo aparto un lote?',
     claves: ['apartar', 'aparto', 'reservar', 'guardar', 'gratis', 'codigo', 'olla-'],
     pasos: [
       'Entra a "Última hora" y busca el lote que te sirve.',
-      'Toca "Apartar gratis" y elige cuántos kilos quieres.',
-      'Te sale un código OLLA-###. No pagas nada todavía.',
+      'Mira el precio del lote: siempre se ve antes de apartar.',
+      'Toca "Apartar lote" y elige cuántos kilos quieres.',
+      'Apartas sin pago adelantado · Pagas al revisar (efectivo o transferencia, recogida en puesto o domicilio según el local).',
+      'Te sale un código OLLA-###.',
       'Llega al puesto, dile el código y revisa la comida con tus ojos.',
       'Si te gusta, toca "Lo revisé y me lo llevo" y pagas en efectivo. Si no, rechazas sin pagar.',
     ],

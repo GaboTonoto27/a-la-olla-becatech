@@ -76,7 +76,7 @@ export default function Inicio() {
         <Card className="space-y-3 border-[#BCD8C5] bg-[#F4F9F5]">
           <h2 className="text-2xl">Tu primera olla, paso a paso</h2>
           <p className="text-base text-piedra">
-            Aún no tienes apartados ni encargos. Mira lo que hay hoy en {ciudad.plaza} y aparta gratis, o cuéntanos qué vas a cocinar y los puestos te responden con su precio.
+            Aún no tienes apartados ni encargos. Mira lo que hay hoy en {ciudad.plaza} y aparta un lote sin pago adelantado, o cuéntanos qué vas a cocinar y los puestos te responden con su precio.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             <Button to="/ultima-hora" variante="acento" icono={Zap}>Ver lo que hay hoy</Button>
@@ -128,7 +128,7 @@ export default function Inicio() {
               {pronto.map((l) => (
                 <li key={l.id} className="flex items-center justify-between gap-3 py-2">
                   <div>
-                    <p className="text-lg font-bold">{l.producto}</p>
+                    <p className="flex flex-wrap items-center gap-2 text-lg font-bold">{l.producto} {l.vendedorId === usuario.id && <Pill tono="olla">Tu lote publicado</Pill>}</p>
                     <p className="text-sm font-semibold text-ambar">{textoRestanteLote(l.vence, ahora)}</p>
                   </div>
                   <p className="font-titulo text-2xl font-extrabold text-olla">
@@ -137,7 +137,7 @@ export default function Inicio() {
                 </li>
               ))}
             </ul>
-            <Button to="/ultima-hora" variante="acento" icono={Zap} className="w-full">Ver todo y apartar gratis</Button>
+            <Button to="/ultima-hora" variante="acento" icono={Zap} className="w-full">Ver todos los lotes</Button>
           </Card>
           <div className="grid gap-4 md:grid-cols-2">
             <Card>

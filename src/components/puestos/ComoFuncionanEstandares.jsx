@@ -44,7 +44,7 @@ export default function ComoFuncionanEstandares({ className = '' }) {
               Ya no es pa' la mesa: sirve pa' cerdos, gallinas o abono. Siempre dice claro que no es pa' comer.
             </Fila>
             <Fila icono={Banknote} titulo="Revisas primero, pagas después">
-              Apartas gratis, llegas, miras la comida y solo si te gusta pagas en efectivo. Si no, la rechazas sin costo.
+              Apartas sin pago adelantado, llegas, miras la comida y solo si te gusta pagas (efectivo o transferencia, según el local). Si no, la rechazas sin costo.
             </Fila>
           </ul>
         </Modal>

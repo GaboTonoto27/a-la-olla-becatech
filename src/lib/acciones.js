@@ -94,7 +94,7 @@ export function ajustarPrecio(e, loteId, nuevo) {
 
 export function apartar(e, usuario, loteId, cantidad, ahora = Date.now()) {
   const l = e.lotes.find((x) => x.id === loteId)
-  if (!l || !loteActivo(l, ahora) || cantidad <= 0 || cantidad > l.cantidad) {
+  if (!l || l.vendedorId === usuario.id || !loteActivo(l, ahora) || cantidad <= 0 || cantidad > l.cantidad) {
     return { estado: e, resultado: null }
   }
   const apartado = {

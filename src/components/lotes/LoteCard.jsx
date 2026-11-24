@@ -1,4 +1,4 @@
-import { Sprout, ChefHat, BadgeCheck, Star, TrendingDown } from 'lucide-react'
+import { Sprout, ChefHat, BadgeCheck, Star, Store, TrendingDown } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { infoPrecio } from '../../lib/precios.js'
 import { NIVELES } from '../../data/semilla.js'
@@ -12,7 +12,8 @@ import { SelloFrio } from '../puestos/Sellos.jsx'
 import { cant } from '../../lib/unidades.js'
 
 export default function LoteCard({ lote, ahora, onApartar }) {
-  const { sinCelular, estandaresDe } = useApp()
+  const { usuario, modo, sinCelular, estandaresDe } = useApp()
+  const esMio = lote.vendedorId === usuario.id
   const frio = estandaresDe(lote.vendedorId).frio ?? lote.frio
   // Rebaja solo si el precio final quedó por debajo del normal; si no, va la etiqueta de calidad (Extra o Regular).
   const info = infoPrecio(lote.normal, lote.rescate, lote.calidad)
@@ -50,9 +51,21 @@ export default function LoteCard({ lote, ahora, onApartar }) {
         <TiempoBarra lote={lote} ahora={ahora} />
         {sinCelular(lote.vendedorId) && <SinCelularAviso />}
 
-        <Button className="mt-auto w-full" icono={BadgeCheck} onClick={() => onApartar(lote)}>
-          Apartar gratis
-        </Button>
+        {esMio ? (
+          <div className="mt-auto space-y-2">
+            <Pill tono="olla" icono={Store}>Tu lote publicado</Pill>
+            <Button to={modo === 'vendedor' ? '/ultima-hora' : '/cuenta'} variante="contorno" className="w-full">
+              {modo === 'vendedor' ? "Gestionar en Pon pa' la olla" : 'Gestionar en Mi cuenta'}
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-auto space-y-1">
+            <Button className="w-full" icono={BadgeCheck} onClick={() => onApartar(lote)}>
+              Apartar lote
+            </Button>
+            <p className="text-center text-sm text-piedra">Sin pago adelantado · Pagas al revisar</p>
+          </div>
+        )}
       </div>
     </article>
   )

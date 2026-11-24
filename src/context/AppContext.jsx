@@ -269,7 +269,6 @@ export function AppProvider({ children }) {
     solicitarDevolucion,
     resolverDevolucion: (id, decision, nota) => aplicar(dev.resolverDevolucion, id, decision, nota),
     alertasCorreo: estado.alertasCorreo,
-    plazas: estado.plazas,
     adminCorreo: estado.adminCorreo,
     pushAdmin: estado.pushAdmin,
     avisos,
@@ -311,7 +310,6 @@ export function AppProvider({ children }) {
     reactivarCuenta: (id) => aplicar(social.reactivarCuenta, id),
     revisarMarcado: (id) => aplicar(social.revisarMarcado, id),
     atenderTicket: (id) => aplicar(social.atenderTicket, id),
-    agregarPlaza: (d) => aplicar(social.agregarPlaza, d),
     marcarTodoLeido: () => aplicar(social.marcarTodoLeido),
     cambiarAdminCorreo: (correo) => setEstado((e) => ({ ...e, adminCorreo: correo })),
     activarPush: async () => {

@@ -2,6 +2,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { ChefHat, Store } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import Toggle from '../ui/Toggle.jsx'
+import Logo from '../ui/Logo.jsx'
 import ZonaBar from './ZonaBar.jsx'
 import Punto from '../ui/Punto.jsx'
 import { pestanasPara } from './navegacion.js'
@@ -14,8 +15,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-borde bg-marfil/95 backdrop-blur">
       <div className="mx-auto flex min-h-[64px] max-w-5xl items-center gap-3 px-4">
-        <Link to={esAdmin ? '/admin' : '/'} className="inline-flex min-h-[48px] items-center font-titulo text-2xl font-extrabold text-olla">
-          A la Olla
+        <Link to={esAdmin ? '/admin' : '/'} className="inline-flex min-h-[48px] items-center" aria-label="A la Olla, ir al inicio">
+          <Logo />
         </Link>
 
         {!esAdmin && (

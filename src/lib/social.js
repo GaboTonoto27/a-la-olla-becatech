@@ -384,11 +384,3 @@ export function promedioPuesto(resenas, puestoId) {
   if (!lista.length) return null
   return { promedio: Math.round((lista.reduce((s, r) => s + r.promedio, 0) / lista.length) * 10) / 10, total: lista.length }
 }
-
-// ---------- Expansión: plazas nuevas, cada una independiente (su coordinador y su moneda) ----------
-export function agregarPlaza(e, d, ahora = Date.now()) {
-  const nombre = `${d.ciudad.trim()} · ${d.plaza.trim()}`
-  if (e.plazas.some((p) => p.nombre.toLowerCase() === nombre.toLowerCase())) return { estado: e, resultado: false }
-  const plaza = { id: uid('pz'), nombre, ciudad: d.ciudad.trim(), plaza: d.plaza.trim(), moneda: d.moneda, coordinador: d.coordinador.trim(), estado: 'En preparación', creado: ahora }
-  return { estado: { ...e, plazas: [plaza, ...e.plazas] }, resultado: plaza }
-}

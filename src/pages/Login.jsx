@@ -8,6 +8,7 @@ import ConfirmaCorreo from '../components/auth/ConfirmaCorreo.jsx'
 import BannerPrototipo from '../components/layout/BannerPrototipo.jsx'
 import Button from '../components/ui/Button.jsx'
 import Chip from '../components/ui/Chip.jsx'
+import Logo from '../components/ui/Logo.jsx'
 import FormPuesto, { PUESTO_VACIO, campo } from '../components/auth/FormPuesto.jsx'
 import OAuthModal from '../components/auth/OAuthModal.jsx'
 import CuentasDemo from '../components/auth/CuentasDemo.jsx'
@@ -190,7 +191,7 @@ export default function Login() {
     <div className="min-h-dvh">
       <BannerPrototipo />
       <main className="mx-auto max-w-xl px-4 py-8">
-        <h1 className="font-titulo text-5xl font-extrabold text-olla">A la Olla</h1>
+        <h1><Logo size={56} texto="text-5xl" /></h1>
         <p className="mb-6 mt-2 text-lg text-piedra">La comida buena de la plaza llega a tu olla, a buen precio y antes de que se pierda.</p>
 
         <div className="space-y-3">

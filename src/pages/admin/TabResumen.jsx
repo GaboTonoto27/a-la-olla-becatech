@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
 import { totalesDevueltos } from '../../lib/devoluciones.js'
+import { tarifaDe } from '../../lib/planPuesto.js'
 import { COSTOS_MES, COSTO_TOTAL_MES, CUOTA_FORMAL, META_PUESTOS, PROMEDIO_POPULAR, kilosDe, sostenibilidad } from '../../lib/economia.js'
 import Card from '../../components/ui/Card.jsx'
 import Pill from '../../components/ui/Pill.jsx'
@@ -35,10 +36,11 @@ export default function TabResumen() {
     const activos = puestos.filter((p) => p.tipo === 'puesto')
     const formales = activos.filter((p) => p.plan === 'formal').length
     const populares = activos.length - formales
-    return { entregas: entregas.length, kg, cop, activos: activos.length, formales, populares }
+    const semanaReal = activos.reduce((s, p) => s + tarifaDe(p), 0) // cuotas asignadas por el equipo
+    return { entregas: entregas.length, kg, cop, activos: activos.length, formales, populares, semanaReal }
   }, [apartados, puestos, dev.compras])
 
-  const hoy = sostenibilidad(datos.formales, datos.populares)
+  const hoy = sostenibilidad(datos.formales, datos.populares, datos.semanaReal)
   const cuotasDevueltas = dev.cuotas + dev.saldos
   const resultadoHoy = hoy.neto - cuotasDevueltas
   // Meta: los ~35 puestos de frutas y verduras de la plaza, con la misma mezcla formal/popular de hoy.
@@ -79,7 +81,7 @@ export default function TabResumen() {
           <div>
             <h3 className="mb-1 text-xl">Hoy: {datos.formales} formales y {datos.populares} populares</h3>
             <ul className="divide-y divide-borde">
-              <Linea k="Ingresos por semana" v={dinero(hoy.semana)} />
+              <Linea k="Ingresos por semana (cuotas asignadas)" v={dinero(hoy.semana)} />
               <Linea k="Ingresos por mes" v={dinero(hoy.mes)} />
               <Linea k="Costos fijos por mes" v={`− ${dinero(COSTO_TOTAL_MES)}`} />
               {cuotasDevueltas > 0 && <Linea k="Cuotas devueltas (aprobadas)" v={`− ${dinero(cuotasDevueltas)}`} />}

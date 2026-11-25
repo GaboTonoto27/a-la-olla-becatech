@@ -10,24 +10,28 @@ import TabUsuarios from './TabUsuarios.jsx'
 import TabTickets from './TabTickets.jsx'
 import TabExpansion from './TabExpansion.jsx'
 import TabAnalitica from './TabAnalitica.jsx'
+import TabPuestos from './TabPuestos.jsx'
+
 
 const TABS = [
   { id: 'resumen', etiqueta: 'Resumen y Sostenibilidad' },
   { id: 'denuncias', etiqueta: 'Denuncias y Calidad' },
   { id: 'analitica', etiqueta: 'Analítica y Data Science' },
   { id: 'reembolsos', etiqueta: 'Reembolsos y Devoluciones' },
+  { id: 'puestos', etiqueta: 'Verificación de puestos' },
   { id: 'usuarios', etiqueta: 'Usuarios y Moderación' },
   { id: 'tickets', etiqueta: 'Tickets de soporte' },
   { id: 'expansion', etiqueta: 'Expansión y Plazas' },
 ]
 
 function Campana({ irA }) {
-  const { denuncias, tickets, marcados, devoluciones, sinLeerAdmin, marcarTodoLeido } = useApp()
+  const { denuncias, tickets, marcados, devoluciones, puestos, sinLeerAdmin, marcarTodoLeido } = useApp()
   const [abierta, setAbierta] = useState(false)
   const items = [
     ...denuncias.filter((d) => !d.leida).map((d) => ({ id: d.id, tab: 'denuncias', texto: d.asunto, tipo: 'Denuncia', t: d.creado })),
     ...tickets.filter((t) => !t.leida).map((t) => ({ id: t.id, tab: 'tickets', texto: t.asunto, tipo: 'Ticket', t: t.creado })),
     ...devoluciones.filter((d) => !d.leida).map((d) => ({ id: d.id, tab: 'reembolsos', texto: `${d.producto} · ${d.autorNombre}`, tipo: 'Devolución', t: d.creado })),
+    ...puestos.filter((p) => p.tipo === 'puesto' && p.verificacion?.estado === 'enviado' && !p.verificacion.leida).map((p) => ({ id: `v-${p.id}`, tab: 'puestos', texto: p.nombre, tipo: 'Puesto por verificar', t: p.verificacion.enviadoEn ?? 0 })),
     ...marcados.filter((m) => !m.leida).map((m) => ({ id: m.id, tab: 'usuarios', texto: m.texto, tipo: 'Comentario marcado', t: m.creado })),
   ].sort((a, b) => b.t - a.t)
 
@@ -129,6 +133,7 @@ export default function AdminInicio() {
       {tab === 'denuncias' && <TabDenuncias />}
       {tab === 'analitica' && <TabAnalitica />}
       {tab === 'reembolsos' && <TabReembolsos />}
+      {tab === 'puestos' && <TabPuestos />}
       {tab === 'usuarios' && <TabUsuarios />}
       {tab === 'tickets' && <TabTickets />}
       {tab === 'expansion' && <TabExpansion />}

@@ -3,6 +3,7 @@ import { FileDown, Loader2, PackageOpen } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
 import { PLANES, resumenSemana } from '../../lib/economia.js'
+import { tarifaDe } from '../../lib/planPuesto.js'
 import Card from '../ui/Card.jsx'
 import Button from '../ui/Button.jsx'
 import Pill from '../ui/Pill.jsx'
@@ -44,8 +45,10 @@ export default function PanelEconomico() {
   const [bajando, setBajando] = useState(false)
   const vendedor = modo === 'vendedor'
   const plan = miPuesto?.plan ?? 'popular'
-  const r = resumenSemana(apartados, usuario.id, vendedor, plan, Date.now(), devoluciones)
+  const r = resumenSemana(apartados, usuario.id, vendedor, plan, Date.now(), devoluciones, miPuesto?.tarifa)
   const maximo = Math.max(r.ingresos, r.cuota)
+  const definitiva = miPuesto?.verificacion?.estado === 'verificado' && typeof miPuesto?.tarifa === 'number'
+  const tarifa = tarifaDe(miPuesto)
 
   const descargar = async () => {
     setBajando(true)
@@ -53,7 +56,7 @@ export default function PanelEconomico() {
       const { descargarReporte } = await import('../../lib/reportePdf.js')
       await descargarReporte({
         vendedor, nombre: usuario.nombre, puesto: miPuesto?.nombre ?? usuario.negocio, plan,
-        planTexto: `${PLANES[plan].nombre} (${PLANES[plan].precio})`, resumen: r,
+        planTexto: `${PLANES[plan].nombre} (${definitiva ? `${dinero(tarifa)} COP/sem` : PLANES[plan].precio})`, resumen: r,
       })
       notificar('Reporte semanal descargado')
     } finally {
@@ -118,8 +121,11 @@ export default function PanelEconomico() {
             {r.cuotaDevuelta > 0 && <> (incluye {dinero(r.cuotaDevuelta)} de cuota devuelta)</>}
             {r.roi ? <> · por cada $1 de cuota recuperaste ${String(r.roi).replace('.', ',')}.</> : '.'}
           </p>
+          <p className="text-base font-bold" data-testid="cuota-asignada">
+            Tu cuota por semana: {dinero(tarifa)} {definitiva ? '(confirmada por el equipo)' : '(sugerida, el equipo la confirma)'}
+          </p>
           <p className="text-sm text-piedra">
-            {plan === 'formal'
+            {definitiva ? `${PLANES[plan].nombre}: tarifa fija de ${dinero(tarifa)} por semana. ` : plan === 'formal'
               ? 'Plan Formal: $10.000 COP/sem. La cuota ajusta de forma progresiva entre 5% y 10% solo después de superar 100 ventas por semana.'
               : 'Plan Popular: de $0 a $3.000 COP/sem, según lo que recuperes (5%, con tope de $3.000).'}{' '}
             La cuota corre desde tu primera entrega.

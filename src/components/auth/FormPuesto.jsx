@@ -1,13 +1,13 @@
 import { lazy, Suspense, useRef, useState } from 'react'
-import { Camera, Home, Snowflake, Sun, Trash2 } from 'lucide-react'
-import { PLANES } from '../../lib/economia.js'
+import { Camera, Home, Trash2 } from 'lucide-react'
+import { PREGUNTAS, RESPUESTAS_VACIAS, sugerirPlan } from '../../lib/planPuesto.js'
 import { MAX_FOTOS, comprimirImagen } from '../../lib/imagen.js'
 import { useApp } from '../../context/AppContext.jsx'
 import Toggle from '../ui/Toggle.jsx'
 
 const SelectorUbicacion = lazy(() => import('../mapa/SelectorUbicacion.jsx'))
 
-export const PUESTO_VACIO = { nombre: '', formal: false, coord: null, zona: true, nequi: false, sinCelular: false, plan: 'popular', direccion: '', horario: '', descripcion: '', fotos: [] }
+export const PUESTO_VACIO = { nombre: '', formal: false, coord: null, zona: true, nequi: false, sinCelular: false, plan: 'popular', respuestas: RESPUESTAS_VACIAS, direccion: '', horario: '', descripcion: '', fotos: [] }
 export const campo = 'min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base'
 
 function Opcion({ activa, onClick, icono: Icono, titulo, detalle }) {
@@ -107,6 +107,14 @@ function FotosPuesto({ fotos = [], onChange }) {
 export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFotos, onConfirmarUbicacion, ubicacionActual = null }) {
   const { notificar } = useApp()
   const poner = (c) => onChange({ ...valor, ...c })
+  const r = valor.respuestas ?? RESPUESTAS_VACIAS
+  const sugerido = sugerirPlan(r)
+  // Las respuestas mandan: la refrigeración define si es "formal" (nevera) y el plan sugerido sale de ellas.
+  const ponerRespuesta = (c) => {
+    const nuevas = { ...r, ...c }
+    const formal = nuevas.refri === 'frio'
+    poner({ respuestas: nuevas, formal, plan: sugerirPlan(nuevas).plan, ...(formal ? {} : { nequi: false }) })
+  }
   return (
     <div className="space-y-5">
       <div>
@@ -129,13 +137,22 @@ export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFoto
 
       <FotosPuesto fotos={valor.fotos ?? []} onChange={(fotos) => (onFotos ? onFotos(fotos) : poner({ fotos }))} />
 
-      <div>
-        <p className="mb-2 text-base font-bold">¿Cómo es tu puesto?</p>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Opcion activa={valor.formal} icono={Snowflake} titulo="Formal, con nevera" detalle="Tienes nevera o cuarto frío." onClick={() => poner({ formal: true, plan: 'formal' })} />
-          <Opcion activa={!valor.formal} icono={Sun} titulo="Informal, al ambiente" detalle="Sin nevera: vendes pa' consumo del día." onClick={() => poner({ formal: false, nequi: false, plan: 'popular' })} />
+      <fieldset className="space-y-4">
+        <legend className="mb-1 text-lg font-bold">Cuéntanos cómo es tu puesto</legend>
+        {PREGUNTAS.map((q) => (
+          <div key={q.id}>
+            <p className="mb-2 text-base font-bold">{q.titulo}</p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              {q.opciones.map((o) => (
+                <Opcion key={o.id} activa={r[q.id] === o.id} titulo={o.titulo} detalle={o.detalle} onClick={() => ponerRespuesta({ [q.id]: o.id })} />
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="rounded-2xl border border-borde bg-white px-4">
+          <Fila titulo="Es un punto muy concurrido o conocido" detalle="Mucha gente te conoce y pasa por tu puesto." activo={Boolean(r.concurrido)} onChange={(v) => ponerRespuesta({ concurrido: v })} />
         </div>
-      </div>
+      </fieldset>
 
       <div>
         <p className="mb-2 text-base font-bold">¿Dónde queda?</p>
@@ -163,14 +180,10 @@ export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFoto
         <Fila titulo="Modo Sin Celular en Puesto" detalle="Contestas encargos desde la casa, no en el puesto." activo={valor.sinCelular} onChange={(v) => poner({ sinCelular: v })} />
       </div>
 
-      <div>
-        <p className="mb-2 flex items-center gap-2 text-base font-bold"><Home size={18} className="text-olla" aria-hidden="true" /> Tu plan</p>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          {Object.values(PLANES).map((p) => (
-            <Opcion key={p.id} activa={valor.plan === p.id} titulo={`${p.nombre} · ${p.precio}`} detalle={p.detalle} onClick={() => poner({ plan: p.id })} />
-          ))}
-        </div>
-        <p className="mt-2 text-sm text-piedra">La cuota solo corre desde tu primera entrega. Sin plata por adelantado.</p>
+      <div className="space-y-2 rounded-2xl border border-olla bg-[#E7F1EA] p-4" role="status" aria-live="polite" data-testid="plan-sugerido">
+        <p className="flex items-center gap-2 text-base font-bold"><Home size={18} className="text-olla" aria-hidden="true" /> Plan sugerido: {sugerido.etiqueta} · {sugerido.precio}</p>
+        <p className="text-base">{sugerido.motivo}</p>
+        <p className="text-sm text-piedra">El equipo de A la Olla confirma tu tarifa final. La cuota solo corre desde tu primera entrega. Sin plata por adelantado.</p>
       </div>
     </div>
   )

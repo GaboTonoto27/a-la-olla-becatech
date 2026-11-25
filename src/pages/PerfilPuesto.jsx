@@ -120,6 +120,7 @@ export default function PerfilPuesto() {
             <p className="text-base text-piedra">{puesto.barrio} · Puesto {puesto.formal ? 'formal' : 'informal'}</p>
           </div>
           {puesto.descripcion && <p className="text-base">{puesto.descripcion}</p>}
+          {puesto.verificacion?.estado === 'verificado' && <Pill tono="olla">Puesto verificado</Pill>}
           <Sellos vendedorId={puesto.id} completo avisoSinCelular />
           <ul className="space-y-2 text-base">
             <li className="flex gap-2">

@@ -39,7 +39,7 @@ export default function Inicio() {
   )
   const misEncargos = pedidos.filter((p) => p.compradorId === usuario.id && p.estado !== 'cerrado').length
   const kilosSalvables = delaPlaza.reduce((s, l) => s + (l.unidad === 'kg' ? l.cantidad : 0), 0)
-  const semana = resumenSemana(apartados, usuario.id, true, miPuesto?.plan ?? 'popular', ahora, devoluciones)
+  const semana = resumenSemana(apartados, usuario.id, true, miPuesto?.plan ?? 'popular', ahora, devoluciones, miPuesto?.tarifa)
   const pronto = [...delaPlaza].sort((a, b) => a.vence - b.vence).slice(0, 3)
 
   return (

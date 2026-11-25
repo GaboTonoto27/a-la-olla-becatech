@@ -2,6 +2,8 @@
 import { clasificar, esOfensivo, ETIQUETA_NIVEL } from './copiloto.js'
 import { PERFILES_COMPRADOR } from '../data/seed.js'
 import { correoValido } from './verificacion.js'
+import { listaPuestos } from '../data/puestos.js'
+import { RESPUESTAS_VACIAS, sugerirPlan, APROBACIONES } from './planPuesto.js'
 
 const MIN = 60000
 const DIA = 24 * 60 * MIN
@@ -85,7 +87,8 @@ export function crearCuenta(e, d) {
   }
   let puestosExtra = e.puestosExtra
   if (p) {
-    const formal = p.formal
+    const respuestas = p.respuestas ?? RESPUESTAS_VACIAS
+    const formal = respuestas.refri === 'frio'
     puestosExtra = [
       ...puestosExtra,
       {
@@ -99,12 +102,15 @@ export function crearCuenta(e, d) {
         coord: p.coord ?? CENTRO_BQ,
         privacidad: p.zona ? 'zona' : 'exacto',
         formal,
-        plan: p.plan,
+        plan: sugerirPlan(respuestas).plan,
         fotos: p.fotos ?? [],
         horario: p.horario?.trim() || 'Lun–Sáb 6:00 a. m. – 4:00 p. m.',
         pagos: p.nequi ? [PAGO_EFECTIVO, 'Nequi (opcional)'] : [PAGO_EFECTIVO],
         estandares: { frio: formal, tapada: false, techo: false, separa: false, domicilio: false, nequi: Boolean(p.nequi) },
         propio: true,
+        respuestas,
+        sugerido: sugerirPlan(respuestas),
+        verificacion: { estado: 'prueba', nota: '', creado: Date.now() },
       },
     ]
   }
@@ -122,6 +128,42 @@ export function editarCuenta(e, id, cambios) {
     nuevo.etiqueta = et ?? 'Comprador'
   }
   return { estado: { ...e, cuentas: e.cuentas.map((x) => (x.id === id ? nuevo : x)) }, resultado: true }
+}
+
+// Puestos que el vendedor ya mandó a revisar y esperan al equipo.
+export const pendientesVerificacion = (e) =>
+  listaPuestos(e.puestosExtra, e.puestoOverrides).filter((p) => p.tipo === 'puesto' && p.verificacion?.estado === 'enviado')
+
+const conVerificacion = (e, id, v, extra = {}) => ({
+  ...e,
+  puestoOverrides: { ...e.puestoOverrides, [id]: { ...e.puestoOverrides[id], ...extra, verificacion: v } },
+})
+const puestoDe = (e, id) => listaPuestos(e.puestosExtra, e.puestoOverrides).find((p) => p.id === id && p.tipo === 'puesto')
+
+// El vendedor manda su puesto a revisión: pasa a la cola del Admin.
+export function enviarVerificacion(e, id, ahora = Date.now()) {
+  const p = puestoDe(e, id)
+  if (!p) return { estado: e, resultado: false }
+  const v = { ...(p.verificacion ?? {}), estado: 'enviado', enviadoEn: ahora, leida: false }
+  return { estado: conVerificacion(e, id, v), resultado: true }
+}
+
+// El Admin aprueba con una tarifa definitiva (opId de APROBACIONES) o pide un ajuste con nota obligatoria.
+export function resolverVerificacion(e, id, decision, nota = '', ahora = Date.now()) {
+  const p = puestoDe(e, id)
+  const limpia = String(nota ?? '').trim().slice(0, 300)
+  if (!p) return { estado: e, resultado: { ok: false, error: 'No encontramos ese puesto.' } }
+  const base = { ...(p.verificacion ?? {}), leida: true, resueltoEn: ahora, nota: limpia }
+  if (decision === 'ajuste') {
+    if (limpia.length < 3) return { estado: e, resultado: { ok: false, error: "Escribe una nota pa' que el vendedor sepa qué ajustar." } }
+    return { estado: conVerificacion(e, id, { ...base, estado: 'ajuste' }), resultado: { ok: true, estado: 'ajuste' } }
+  }
+  const op = APROBACIONES.find((a) => a.id === decision)
+  if (!op) return { estado: e, resultado: { ok: false, error: 'Opción no válida.' } }
+  return {
+    estado: conVerificacion(e, id, { ...base, estado: 'verificado', aprobado: op.id }, { plan: op.plan, tarifa: op.tarifa }),
+    resultado: { ok: true, estado: 'verificado', op },
+  }
 }
 
 export function editarPuesto(e, id, cambios) {
@@ -339,6 +381,10 @@ export function marcarTodoLeido(e) {
       tickets: e.tickets.map((t) => ({ ...t, leida: true })),
       marcados: e.marcados.map((m) => ({ ...m, leida: true })),
       devoluciones: (e.devoluciones ?? []).map((d) => ({ ...d, leida: true })),
+      puestoOverrides: Object.fromEntries(
+        Object.entries(e.puestoOverrides).map(([k, o]) => [k, o.verificacion ? { ...o, verificacion: { ...o.verificacion, leida: true } } : o]),
+      ),
+      puestosExtra: e.puestosExtra.map((p) => (p.verificacion ? { ...p, verificacion: { ...p.verificacion, leida: true } } : p)),
     },
     resultado: true,
   }
@@ -348,7 +394,8 @@ export const sinLeerAdmin = (e) =>
   e.denuncias.filter((d) => !d.leida).length +
   e.tickets.filter((t) => !t.leida).length +
   e.marcados.filter((m) => !m.leida).length +
-  (e.devoluciones ?? []).filter((d) => !d.leida).length
+  (e.devoluciones ?? []).filter((d) => !d.leida).length +
+  pendientesVerificacion(e).filter((p) => !p.verificacion.leida).length
 
 // ---------- Soporte ----------
 export function crearTicket(e, d, ahora = Date.now()) {

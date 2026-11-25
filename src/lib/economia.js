@@ -18,14 +18,15 @@ export function kilosDe(unidad, cantidad) {
 
 // Cuota de la semana: el plan Formal cuesta $10.000 y el Popular el 5% de lo recuperado (tope $3.000).
 // En el prototipo la cuota solo corre desde la primera entrega confirmada.
-export function cuotaSemana(plan, ingresos, entregas) {
+export function cuotaSemana(plan, ingresos, entregas, tarifa) {
   if (!entregas) return 0
+  if (typeof tarifa === 'number') return tarifa // tarifa definitiva confirmada por el equipo
   if (plan === 'formal') return CUOTA_FORMAL
   return Math.min(CUOTA_POPULAR_MAX, Math.round((ingresos * 0.05) / 100) * 100)
 }
 
 // devoluciones: las aprobadas descuentan la plata devuelta al comprador y suman la cuota devuelta al vendedor.
-export function resumenSemana(apartados, usuarioId, comoVendedor, plan, ahora = Date.now(), devoluciones = []) {
+export function resumenSemana(apartados, usuarioId, comoVendedor, plan, ahora = Date.now(), devoluciones = [], tarifa) {
   const desde = ahora - SEMANA
   const entregas = apartados
     .filter((a) => a.estado === 'entregado' && (comoVendedor ? a.vendedorId === usuarioId : a.comprador.id === usuarioId))
@@ -44,7 +45,7 @@ export function resumenSemana(apartados, usuarioId, comoVendedor, plan, ahora = 
   const ahorro = entregas
     .filter((a) => !reembolsadas.has(a.id))
     .reduce((s, a) => s + (a.normal ? Math.max(0, (a.normal - (a.rescate ?? a.normal)) * a.cantidad) : 0), 0)
-  const cuota = comoVendedor ? cuotaSemana(plan, ingresos, entregas.length) : 0
+  const cuota = comoVendedor ? cuotaSemana(plan, ingresos, entregas.length, tarifa) : 0
   return {
     entregas,
     kilos: Math.round(kilos * 10) / 10,
@@ -70,8 +71,9 @@ export const COSTOS_MES = [
 export const COSTO_TOTAL_MES = COSTOS_MES.reduce((s, c) => s + c.valor, 0)
 export const META_PUESTOS = 35
 
-export function sostenibilidad(formales, populares) {
-  const semana = formales * CUOTA_FORMAL + populares * PROMEDIO_POPULAR
+// semanaReal: suma de las tarifas ya asignadas por el equipo (si no se pasa, se usa el promedio de cada plan).
+export function sostenibilidad(formales, populares, semanaReal) {
+  const semana = semanaReal ?? formales * CUOTA_FORMAL + populares * PROMEDIO_POPULAR
   const mes = Math.round(semana * SEMANAS_MES)
   const porFormal = Math.round(CUOTA_FORMAL * SEMANAS_MES)
   return {

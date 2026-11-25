@@ -332,6 +332,19 @@ export function AppProvider({ children }) {
     sinCelular,
     cambiarSinCelular,
     editarPuesto: (id, cambios) => aplicar(social.editarPuesto, id, cambios),
+    enviarVerificacion: (id) => {
+      const ok = aplicar(social.enviarVerificacion, id)
+      if (ok) {
+        avisarAdmin('A la Olla · Puesto por verificar', 'Un vendedor envió su puesto a revisión.')
+        notificar('Solicitud enviada para verificación del equipo')
+      }
+      return ok
+    },
+    resolverVerificacion: (id, decision, nota) => {
+      const r = aplicar(social.resolverVerificacion, id, decision, nota)
+      if (r.ok) notificar(r.estado === 'ajuste' ? 'Ajuste solicitado al vendedor' : `Puesto verificado · ${r.op.nombre} ($${new Intl.NumberFormat('es-CO').format(r.op.tarifa)}/sem)`)
+      return r
+    },
     editarCuenta: (id, cambios) => aplicar(social.editarCuenta, id, cambios),
     publicarLote: (d) => confirmar(aplicar(reglas.publicarLote, usuario, ciudad, d, miPuesto), "Lote publicado en 'Pon pa' la olla'"),
     retirarLote: (id) => confirmar(aplicar(reglas.retirarLote, id), 'Lote retirado de tu vitrina'),

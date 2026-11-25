@@ -9,6 +9,7 @@ import MisDatos from '../components/cuenta/MisDatos.jsx'
 import MiPuestoEditor from '../components/cuenta/MiPuestoEditor.jsx'
 import LlevarCiudadModal from '../components/cuenta/LlevarCiudadModal.jsx'
 import { GarantiaCuota, MisCompras } from '../components/cuenta/MisDevoluciones.jsx'
+import { ESTADOS } from '../lib/planPuesto.js'
 import { PERFILES_COMPRADOR } from '../data/seed.js'
 
 const ROL = { ambos: 'Compra y vende', vendedor: 'Vendedor', comprador: 'Comprador' }
@@ -32,6 +33,9 @@ export default function Cuenta() {
         <div className="flex flex-wrap gap-2">
           <Pill tono="olla">{ROL[usuario.rol]}</Pill>
           {perfil && usuario.rol !== 'vendedor' && <Pill>{perfil.etiqueta}</Pill>}
+          {miPuesto && usuario.rol !== 'comprador' && (
+            <Pill tono={(ESTADOS[miPuesto.verificacion?.estado] ?? ESTADOS.verificado).tono}>{(ESTADOS[miPuesto.verificacion?.estado] ?? ESTADOS.verificado).texto}</Pill>
+          )}
           {sinCelular(usuario.id) && <Pill tono="ambar">Contesta desde la casa</Pill>}
         </div>
       </Card>

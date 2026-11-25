@@ -74,7 +74,7 @@ export function GarantiaCuota() {
   const { usuario, apartados, devoluciones, miPuesto } = useApp()
   const [abierta, setAbierta] = useState(false)
   const plan = miPuesto?.plan ?? 'popular'
-  const r = resumenSemana(apartados, usuario.id, true, plan, Date.now(), devoluciones)
+  const r = resumenSemana(apartados, usuario.id, true, plan, Date.now(), devoluciones, miPuesto?.tarifa)
   const mias = devoluciones.filter((d) => d.clase === 'cuota' && d.autorId === usuario.id)
   const enCurso = mias.some((d) => d.estado === 'solicitado')
   const maximo = Math.max(0, r.cuota - r.cuotaDevuelta - r.saldoFavor) // lo que aún se puede reclamar de la cuota

@@ -9,6 +9,7 @@ import BannerPrototipo from '../components/layout/BannerPrototipo.jsx'
 import Button from '../components/ui/Button.jsx'
 import Chip from '../components/ui/Chip.jsx'
 import Logo from '../components/ui/Logo.jsx'
+import Toast from '../components/ui/Toast.jsx'
 import FormPuesto, { PUESTO_VACIO, campo } from '../components/auth/FormPuesto.jsx'
 import OAuthModal from '../components/auth/OAuthModal.jsx'
 import CuentasDemo from '../components/auth/CuentasDemo.jsx'
@@ -240,6 +241,7 @@ export default function Login() {
           Tu número nunca se muestra: el chat es dentro de la app.
         </p>
       </main>
+      <Toast />
       {oauth && <OAuthModal proveedor={oauth} onCerrar={() => setOauth(null)} />}
     </div>
   )

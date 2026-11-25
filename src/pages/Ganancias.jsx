@@ -13,10 +13,10 @@ function Sugerencias() {
   const ahora = useAhora(60000)
   const plan = miPuesto?.plan ?? 'popular'
   const lista = useMemo(() => {
-    const resumen = resumenSemana(apartados, usuario.id, true, plan, ahora, devoluciones)
+    const resumen = resumenSemana(apartados, usuario.id, true, plan, ahora, devoluciones, miPuesto?.tarifa)
     const mios = lotes.filter((l) => l.vendedorId === usuario.id)
     return sugerenciasVendedor({ apartados, vendedorId: usuario.id, lotes: mios, resumen, sinCelular: sinCelular(usuario.id), plan })
-  }, [apartados, lotes, usuario.id, plan, ahora, devoluciones, sinCelular])
+  }, [apartados, lotes, usuario.id, plan, ahora, devoluciones, sinCelular, miPuesto?.tarifa])
 
   return (
     <Card className="space-y-3">

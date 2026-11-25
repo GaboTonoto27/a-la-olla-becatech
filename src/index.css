@@ -30,3 +30,15 @@
   :focus-visible { outline: 3px solid var(--color-olla); outline-offset: 2px; }
   select:focus-visible { outline: 2px solid rgb(27 94 58 / 0.3); outline-offset: -2px; border-radius: 0.75rem; }
 }
+
+/* Edición navideña: guirnalda fina de luces arriba del encabezado. Suave, sin tapar nada. */
+.luces-navidad {
+  height: 10px;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='72' height='10' viewBox='0 0 72 10'><path d='M0 2Q18 6 36 2Q54 6 72 2' fill='none' stroke='%23857460' stroke-width='.9'/><circle cx='9' cy='5.6' r='2.3' fill='%23D62F2F'/><circle cx='27' cy='6.4' r='2.3' fill='%23E2A93B'/><circle cx='45' cy='5.6' r='2.3' fill='%232E8B57'/><circle cx='63' cy='6.4' r='2.3' fill='%23D9532F'/></svg>");
+  background-repeat: repeat-x;
+  background-size: 72px 10px;
+  animation: titilar-luces 5s ease-in-out infinite;
+}
+@keyframes titilar-luces { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
+@media (prefers-reduced-motion: reduce) { .luces-navidad { animation: none; } }

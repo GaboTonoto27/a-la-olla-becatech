@@ -155,15 +155,18 @@ export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFoto
       </fieldset>
 
       <div>
-        <p className="mb-2 text-base font-bold">¿Dónde queda?</p>
+        <h3 className="mb-1 text-lg font-bold" data-testid="ubicacion-puesto">Ubicación de mi puesto (para vender)</h3>
+        <p className="mb-2 text-sm text-piedra">Tu puesto puede estar en un lugar distinto a donde te encuentras ahora (ideal si configuras desde casa).</p>
         <Suspense fallback={<p className="flex h-56 items-center justify-center rounded-2xl border border-borde bg-white text-piedra">Cargando el mapa…</p>}>
           <SelectorUbicacion
-            puesto
+            modo="puesto"
+            pregunta="¿Es aquí tu puesto? Puedes mover el punto exacto tú mismo"
             id={puestoId}
             zona={valor.zona}
-            etiqueta="Tu puesto"
+            etiquetaPin="Tu puesto"
+            etiquetaGps="Estoy en mi puesto (usar mi GPS)"
             valor={valor.coord}
-            ubicacionActual={ubicacionActual}
+            referencia={ubicacionActual}
             onChange={(coord) => poner({ coord })}
             onConfirmar={(c) => {
               onConfirmarUbicacion?.(c)

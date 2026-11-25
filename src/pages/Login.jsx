@@ -9,6 +9,7 @@ import BannerPrototipo from '../components/layout/BannerPrototipo.jsx'
 import Button from '../components/ui/Button.jsx'
 import Chip from '../components/ui/Chip.jsx'
 import Logo from '../components/ui/Logo.jsx'
+import LucesNavidad from '../components/ui/LucesNavidad.jsx'
 import Toast from '../components/ui/Toast.jsx'
 import FormPuesto, { PUESTO_VACIO, campo } from '../components/auth/FormPuesto.jsx'
 import OAuthModal from '../components/auth/OAuthModal.jsx'
@@ -203,6 +204,7 @@ export default function Login() {
   return (
     <div className="min-h-dvh">
       <BannerPrototipo />
+      <LucesNavidad />
       <main className="mx-auto max-w-xl px-4 py-8">
         <h1><Logo size={56} texto="text-5xl" /></h1>
         <p className="mb-6 mt-2 text-lg text-piedra">La comida buena de la plaza llega a tu olla, a buen precio y antes de que se pierda.</p>

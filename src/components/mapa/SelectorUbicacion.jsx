@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Check, Crosshair, Loader2 } from 'lucide-react'
+import { useApp } from '../../context/AppContext.jsx'
 import Button from '../ui/Button.jsx'
 import { RADIO_ZONA, centroZona } from '../../data/puestos.js'
 
@@ -12,17 +13,28 @@ const PIN = L.divIcon({
   iconSize: [36, 44],
   iconAnchor: [18, 43],
 })
-const YO = L.divIcon({
-  className: 'pin-olla',
-  html: '<span style="display:block;width:22px;height:22px;border-radius:9999px;background:#1D4ED8;border:4px solid #fff;box-shadow:0 0 0 3px rgba(29,78,216,.35)"></span>',
-  iconSize: [22, 22],
-  iconAnchor: [11, 11],
-})
+const PUNTO_AZUL = '<span style="display:block;width:22px;height:22px;border-radius:9999px;background:#1D4ED8;border:4px solid #fff;box-shadow:0 0 0 3px rgba(29,78,216,.35)"></span>'
+const YO = L.divIcon({ className: 'pin-olla', html: PUNTO_AZUL, iconSize: [22, 22], iconAnchor: [11, 11] })
 
-// Mini-mapa pa' marcar un punto: toca, arrastra el pin o usa el GPS. Cuesta $0 (OpenStreetMap).
-// puesto=true: modo "¿Es aquí tu puesto?" con tu ubicación actual, botón Confirmar y radio aproximado si es informal.
-// ubicacionActual: punto ya guardado de la persona (se dibuja aunque no pida el GPS otra vez).
-export default function SelectorUbicacion({ valor, onChange, puesto = false, zona = false, id = 'x', onConfirmar, etiqueta = 'Tu puesto', onUbicacion, ubicacionActual = null, pregunta = '¿Es aquí tu puesto?' }) {
+// Mini-mapa de OpenStreetMap ($0) con UN solo botón de GPS.
+//  modo "persona": el pin es el punto azul de quien usa la app (pa' comprar).
+//  modo "puesto":  el pin verde es el puesto; el punto azul solo es referencia de dónde está la persona.
+// Al usar el GPS el pin salta directo a esa coordenada y el mapa se centra ahí. Se puede ajustar tocando o arrastrando.
+export default function SelectorUbicacion({
+  modo = 'puesto',
+  valor,
+  onChange,
+  onGps,
+  onConfirmar,
+  zona = false,
+  id = 'x',
+  referencia = null,
+  etiquetaGps = 'Usar mi ubicación',
+  etiquetaPin = 'Tu puesto',
+  pregunta = null,
+}) {
+  const { notificar } = useApp()
+  const esPuesto = modo === 'puesto'
   const caja = useRef(null)
   const mapa = useRef(null)
   const marcador = useRef(null)
@@ -30,10 +42,10 @@ export default function SelectorUbicacion({ valor, onChange, puesto = false, zon
   const circulo = useRef(null)
   const alCambiar = useRef(onChange)
   alCambiar.current = onChange
-  const alUbicar = useRef(onUbicacion)
-  alUbicar.current = onUbicacion
+  const alGps = useRef(onGps)
+  alGps.current = onGps
   const [gps, setGps] = useState('idle')
-  const [mia, setMia] = useState(ubicacionActual)
+  const [mia, setMia] = useState(esPuesto ? referencia : null)
   const [confirmado, setConfirmado] = useState(false)
 
   useEffect(() => {
@@ -44,6 +56,7 @@ export default function SelectorUbicacion({ valor, onChange, puesto = false, zon
     }).addTo(m)
     m.on('click', (ev) => {
       setConfirmado(false)
+      setGps((g) => (g === 'ok' ? 'manual' : g))
       alCambiar.current([ev.latlng.lat, ev.latlng.lng])
     })
     mapa.current = m
@@ -54,19 +67,21 @@ export default function SelectorUbicacion({ valor, onChange, puesto = false, zon
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Pin principal (arrastrable) y, si es un puesto informal, el círculo de zona aproximada.
   useEffect(() => {
     const m = mapa.current
     if (!m || !valor) return
     if (marcador.current) marcador.current.setLatLng(valor)
     else {
-      marcador.current = L.marker(valor, { icon: PIN, title: etiqueta, alt: etiqueta, draggable: true }).addTo(m)
+      marcador.current = L.marker(valor, { icon: esPuesto ? PIN : YO, title: etiquetaPin, draggable: true }).addTo(m)
       marcador.current.on('dragend', () => {
         const p = marcador.current.getLatLng()
         setConfirmado(false)
+        setGps((g) => (g === 'ok' ? 'manual' : g))
         alCambiar.current([p.lat, p.lng])
       })
     }
-    if (puesto && zona) {
+    if (esPuesto && zona) {
       const c = centroZona(valor, id)
       if (circulo.current) circulo.current.setLatLng(c)
       else circulo.current = L.circle(c, { radius: RADIO_ZONA, color: '#D9532F', weight: 2, fillColor: '#D9532F', fillOpacity: 0.12 }).addTo(m)
@@ -74,14 +89,15 @@ export default function SelectorUbicacion({ valor, onChange, puesto = false, zon
       circulo.current.remove()
       circulo.current = null
     }
-  }, [valor, puesto, zona, id, etiqueta])
+  }, [valor, esPuesto, zona, id, etiquetaPin])
 
+  // Punto azul de referencia (solo en modo puesto): dónde está la persona ahora.
   useEffect(() => {
     const m = mapa.current
-    if (!m || !mia) return
+    if (!m || !esPuesto || !mia) return
     if (yo.current) yo.current.setLatLng(mia)
-    else yo.current = L.marker(mia, { icon: YO, title: 'Tú estás aquí', alt: 'Tu ubicación actual', interactive: false }).addTo(m)
-  }, [mia])
+    else yo.current = L.marker(mia, { icon: YO, title: 'Tú estás aquí', interactive: false, keyboard: false }).addTo(m)
+  }, [mia, esPuesto])
 
   const usarGps = () => {
     if (!('geolocation' in navigator)) return setGps('error')
@@ -89,14 +105,18 @@ export default function SelectorUbicacion({ valor, onChange, puesto = false, zon
     navigator.geolocation.getCurrentPosition(
       (p) => {
         const punto = [p.coords.latitude, p.coords.longitude]
-        setMia(punto)
-        alUbicar.current?.(punto)
-        if (!puesto) alCambiar.current(punto)
-        mapa.current?.setView(punto, 17)
+        // El pin salta directo al GPS (sin esperar a que React repinte) y el mapa se acerca ahí.
+        marcador.current?.setLatLng(punto)
+        mapa.current?.flyTo(punto, 17, { duration: 0.6 })
+        if (esPuesto) setMia(punto)
+        setConfirmado(false)
+        alCambiar.current(punto)
+        alGps.current?.(punto)
         setGps('ok')
+        notificar('Listo, apuntamos a tu ubicación actual')
       },
       (e) => setGps(e.code === 1 ? 'denegado' : 'error'),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     )
   }
 
@@ -105,36 +125,37 @@ export default function SelectorUbicacion({ valor, onChange, puesto = false, zon
     onConfirmar?.(valor)
   }
 
+  const mensaje =
+    gps === 'denegado' ? 'No diste permiso al GPS. Toca el mapa o arrastra el pin hasta el punto correcto.'
+    : gps === 'error' ? 'No pudimos ubicarte. Toca el mapa o arrastra el pin hasta el punto correcto.'
+    : gps === 'ok' ? 'Listo, apuntamos a tu ubicación actual. Si no es exacto, toca el mapa o arrastra el pin.'
+    : valor ? 'Toca el mapa o arrastra el pin si quieres moverlo.'
+    : 'Toca el mapa para marcar el punto.'
+
   return (
     <div className="space-y-2">
-      {puesto && (
-        <p className="text-base font-bold">
-          {pregunta} <span className="font-medium text-piedra">{pregunta.includes('puesto') ? 'Puedes mover el punto exacto tú mismo' : ''}</span>
-        </p>
-      )}
+      {pregunta && <p className="text-base font-bold">{pregunta}</p>}
       <div className="isolate h-56 overflow-hidden rounded-2xl border border-borde">
-        <div ref={caja} className="h-full w-full" role="region" aria-label={`Mapa pa' marcar ${etiqueta.toLowerCase()}`} />
+        <div ref={caja} className="h-full w-full" role="region" aria-label={esPuesto ? "Mapa pa' marcar tu puesto" : "Mapa pa' marcar dónde estás"} />
       </div>
-      {puesto && (
-        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-piedra">
-          <span className="flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full border-2 border-white bg-[#1D4ED8] ring-1 ring-[#1D4ED8]" /> Tú estás aquí</span>
-          <span className="flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full bg-olla" /> {etiqueta}</span>
-          {zona && <span className="flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full border-2 border-[#D9532F]" /> Zona aproximada que ven los compradores</span>}
-        </p>
-      )}
-      <Button variante="contorno" icono={gps === 'cargando' ? Loader2 : Crosshair} className="w-full" onClick={usarGps} disabled={gps === 'cargando'}>
-        {gps === 'cargando' ? 'Buscando tu ubicación…' : 'Usar mi ubicación (GPS)'}
-      </Button>
-      {puesto && (
-        <Button icono={Check} className="w-full" onClick={confirmar} disabled={!valor}>
-          {confirmado ? 'Ubicación confirmada' : 'Confirmar ubicación'}
-        </Button>
-      )}
-      <p className="text-sm text-piedra" role="status">
-        {gps === 'denegado' && 'No diste permiso al GPS. Toca el mapa donde está tu punto.'}
-        {gps === 'error' && 'No pudimos ubicarte. Toca el mapa donde está tu punto.'}
-        {gps !== 'denegado' && gps !== 'error' && (valor ? 'Listo, quedó marcado. Toca otro punto o arrastra el pin si quieres moverlo.' : 'Toca el mapa donde está tu punto.')}
+      <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-piedra">
+        {esPuesto ? (
+          <>
+            <span className="flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full border-2 border-white bg-[#1D4ED8] ring-1 ring-[#1D4ED8]" /> Punto azul: dónde estás ahora</span>
+            <span className="flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full bg-olla" /> Pin verde: tu puesto</span>
+            {zona && <span className="flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full border-2 border-[#D9532F]" /> Zona aproximada que ven los compradores</span>}
+          </>
+        ) : (
+          <span className="flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full border-2 border-white bg-[#1D4ED8] ring-1 ring-[#1D4ED8]" /> El punto azul eres tú</span>
+        )}
       </p>
+      <Button variante="contorno" icono={gps === 'cargando' ? Loader2 : Crosshair} className="w-full" onClick={usarGps} disabled={gps === 'cargando'}>
+        {gps === 'cargando' ? 'Buscando tu ubicación…' : etiquetaGps}
+      </Button>
+      <Button icono={Check} className="w-full" onClick={confirmar} disabled={!valor}>
+        {confirmado ? 'Ubicación confirmada' : 'Confirmar ubicación'}
+      </Button>
+      <p className="text-sm text-piedra" role="status">{mensaje}</p>
     </div>
   )
 }

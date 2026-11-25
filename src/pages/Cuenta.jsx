@@ -41,7 +41,7 @@ export default function Cuenta() {
       </Card>
 
       <MisDatos key={`${usuario.id}-${usuario.nombre}`} />
-      {miPuesto && vende && <MiPuestoEditor key={`${miPuesto.id}-${miPuesto.nombre}`} puesto={miPuesto} />}
+      {miPuesto && usuario.rol !== 'comprador' && <MiPuestoEditor key={`${miPuesto.id}-${miPuesto.nombre}`} puesto={miPuesto} />}
       <PanelEconomico key={vende ? 'v' : 'c'} />
       {vende ? <GarantiaCuota /> : <MisCompras />}
 

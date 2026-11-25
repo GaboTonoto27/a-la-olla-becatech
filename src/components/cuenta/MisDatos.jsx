@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
-import { Crosshair, Loader2, MapPin, Pencil } from 'lucide-react'
+import { MapPin, Pencil } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { PERFILES_COMPRADOR } from '../../data/seed.js'
 import Card from '../ui/Card.jsx'
@@ -9,15 +9,42 @@ import { campo } from '../auth/FormPuesto.jsx'
 
 const SelectorUbicacion = lazy(() => import('../mapa/SelectorUbicacion.jsx'))
 
-// Datos propios de la cuenta: igual para demos, Google, Facebook y correo. Sirve a Comprador, Vendedor y Ambos.
+// Ubicación personal (pa' comprar): sale de aquí y NUNCA toca la ubicación del puesto.
+function UbicacionPersonal({ rol }) {
+  const { usuario, editarCuenta, notificar } = useApp()
+  const [borrador, setBorrador] = useState(usuario.ubicacion ?? null)
+  const titulo = rol === 'ambos' ? 'Mi ubicación actual (para comprar)' : 'Mi ubicación actual (para ver puestos cercanos)'
+  return (
+    <div className="space-y-2" data-testid="ubicacion-personal">
+      <h3 className="flex items-center gap-2 text-lg font-bold"><MapPin size={20} className="text-olla" aria-hidden="true" /> {titulo}</h3>
+      <p className="text-sm text-piedra">
+        {usuario.ubicacion ? 'Guardada: con ella calculamos las distancias reales a los puestos.' : "Aún sin guardar. Márcala pa' ver qué tan lejos queda cada puesto."}
+      </p>
+      <Suspense fallback={<p className="flex h-56 items-center justify-center rounded-2xl border border-borde bg-white text-piedra">Cargando el mapa…</p>}>
+        <SelectorUbicacion
+          modo="persona"
+          etiquetaPin="Tu ubicación"
+          etiquetaGps="Usar mi ubicación"
+          valor={borrador}
+          onChange={setBorrador}
+          onGps={(punto) => editarCuenta(usuario.id, { ubicacion: punto })}
+          onConfirmar={(punto) => {
+            editarCuenta(usuario.id, { ubicacion: punto })
+            notificar('Ubicación actualizada. Las distancias ya son las tuyas')
+          }}
+        />
+      </Suspense>
+    </div>
+  )
+}
+
+// Datos propios de la cuenta: igual para demos, Google, Facebook y correo.
+// Solo Vendedor no ve la ubicación de compras: su mapa vive en "Mi puesto".
 export default function MisDatos() {
   const { usuario, editarCuenta, notificar } = useApp()
   const compra = usuario.rol !== 'vendedor'
   const [abierto, setAbierto] = useState(false)
   const [f, setF] = useState({ nombre: usuario.nombre, barrio: usuario.barrio, perfilComprador: usuario.perfilComprador ?? 'hogar' })
-  const [gps, setGps] = useState('idle')
-  const [manual, setManual] = useState(false)
-  const [borrador, setBorrador] = useState(usuario.ubicacion ?? null)
 
   const guardar = (e) => {
     e.preventDefault()
@@ -29,26 +56,6 @@ export default function MisDatos() {
     })
     setAbierto(false)
     notificar('Perfil actualizado')
-  }
-
-  const ponerUbicacion = (punto) => {
-    editarCuenta(usuario.id, { ubicacion: punto })
-    notificar('Ubicación actualizada. Las distancias ya son las tuyas')
-  }
-
-  const usarGps = () => {
-    if (!('geolocation' in navigator)) return setGps('error')
-    setGps('cargando')
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
-        const punto = [p.coords.latitude, p.coords.longitude]
-        setBorrador(punto)
-        ponerUbicacion(punto)
-        setGps('ok')
-      },
-      (e) => setGps(e.code === 1 ? 'denegado' : 'error'),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
-    )
   }
 
   return (
@@ -89,30 +96,7 @@ export default function MisDatos() {
         </form>
       )}
 
-      <div className="space-y-2">
-        <p className="flex items-center gap-2 text-base font-bold"><MapPin size={20} className="text-olla" aria-hidden="true" /> Mi ubicación actual</p>
-        <p className="text-sm text-piedra">
-          {usuario.ubicacion ? 'Guardada. Con ella calculamos las distancias reales a los puestos.' : "Sin guardar. Úsala pa' ver qué tan lejos queda cada puesto."}
-        </p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Button variante="contorno" icono={gps === 'cargando' ? Loader2 : Crosshair} onClick={usarGps} disabled={gps === 'cargando'}>
-            {gps === 'cargando' ? 'Buscando…' : 'Usar mi GPS'}
-          </Button>
-          <Button variante="suave" icono={MapPin} onClick={() => setManual((v) => !v)}>
-            {manual ? 'Cerrar el mapa' : 'Marcar en el mapa'}
-          </Button>
-        </div>
-        {(gps === 'denegado' || gps === 'error') && (
-          <p className="text-sm font-semibold text-[#A8391B]" role="status">
-            {gps === 'denegado' ? 'No diste permiso al GPS.' : 'No pudimos ubicarte.'} Márcalo a mano en el mapa.
-          </p>
-        )}
-        {manual && (
-          <Suspense fallback={<p className="flex h-56 items-center justify-center rounded-2xl border border-borde bg-white text-piedra">Cargando el mapa…</p>}>
-            <SelectorUbicacion puesto zona={false} pregunta="¿Estás aquí? Toca el mapa o arrastra el pin" etiqueta="Tu ubicación" id={usuario.id} valor={borrador} onChange={setBorrador} onConfirmar={ponerUbicacion} />
-          </Suspense>
-        )}
-      </div>
+      {compra && <UbicacionPersonal rol={usuario.rol} />}
     </Card>
   )
 }

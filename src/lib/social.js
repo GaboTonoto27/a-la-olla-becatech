@@ -94,13 +94,14 @@ export function crearCuenta(e, d) {
         tipo: 'puesto',
         nombre: p.nombre.trim(),
         barrio: cuenta.barrio,
-        direccion: 'Ubicación marcada en el mapa',
+        direccion: p.direccion?.trim() || 'Ubicación marcada en el mapa',
+        descripcion: p.descripcion?.trim() || '',
         coord: p.coord ?? CENTRO_BQ,
         privacidad: p.zona ? 'zona' : 'exacto',
         formal,
         plan: p.plan,
-        fotos: [],
-        horario: 'Lun–Sáb 6:00 a. m. – 4:00 p. m.',
+        fotos: p.fotos ?? [],
+        horario: p.horario?.trim() || 'Lun–Sáb 6:00 a. m. – 4:00 p. m.',
         pagos: p.nequi ? [PAGO_EFECTIVO, 'Nequi (opcional)'] : [PAGO_EFECTIVO],
         estandares: { frio: formal, tapada: false, techo: false, separa: false, domicilio: false, nequi: Boolean(p.nequi) },
         propio: true,
@@ -108,6 +109,19 @@ export function crearCuenta(e, d) {
     ]
   }
   return { estado: { ...e, cuentas: [...e.cuentas, cuenta], puestosExtra }, resultado: { ok: true, cuenta } }
+}
+
+// Datos propios de la cuenta (igual para demos, Google, Facebook y correo).
+export function editarCuenta(e, id, cambios) {
+  const c = e.cuentas.find((x) => x.id === id)
+  if (!c) return { estado: e, resultado: false }
+  const nuevo = { ...c, ...cambios }
+  if (cambios.perfilComprador !== undefined && nuevo.rol !== 'vendedor' && nuevo.rol !== 'ambos') {
+    const et = PERFILES_COMPRADOR.find((p) => p.id === nuevo.perfilComprador)?.etiqueta
+    nuevo.negocio = nuevo.perfilComprador === 'hogar' ? 'Hogar' : `${nuevo.nombre} · ${et ?? 'Comprador'}`
+    nuevo.etiqueta = et ?? 'Comprador'
+  }
+  return { estado: { ...e, cuentas: e.cuentas.map((x) => (x.id === id ? nuevo : x)) }, resultado: true }
 }
 
 export function editarPuesto(e, id, cambios) {

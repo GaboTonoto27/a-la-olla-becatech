@@ -50,7 +50,7 @@ export default function Mapa() {
   const ahora = useAhora(60000)
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const [pos, setPos] = useState(null)
+  const [pos, setPos] = useState(usuario.ubicacion ?? null)
   const [gps, setGps] = useState('idle')
   const [lejosOculto, setLejosOculto] = useState(false)
   const [enfoque, setEnfoque] = useState({ id: params.get('puesto'), n: 0 })

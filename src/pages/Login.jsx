@@ -19,11 +19,23 @@ const ROLES = [
   { id: 'ambos', etiqueta: 'Compro y vendo', detalle: 'Las dos cosas, una cuenta', icono: Users },
 ]
 
-function Marca({ letra }) {
+function IconoGoogle() {
   return (
-    <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F3EFE7] font-titulo text-base font-extrabold text-carbon">
-      {letra}
-    </span>
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 48 48" className="shrink-0">
+      <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z" />
+      <path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z" />
+      <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z" />
+    </svg>
+  )
+}
+
+function IconoFacebook() {
+  return (
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" className="shrink-0">
+      <circle cx="12" cy="12" r="12" fill="#1877F2" />
+      <path fill="#fff" d="M16.67 15.47 17.2 12h-3.33V9.75c0-.95.47-1.88 1.96-1.88h1.51V4.92s-1.37-.23-2.68-.23c-2.74 0-4.53 1.66-4.53 4.67V12H7.1v3.47h3.03V24h3.74v-8.53h2.8z" />
+    </svg>
   )
 }
 
@@ -196,10 +208,10 @@ export default function Login() {
 
         <div className="space-y-3">
           <Button variante="suave" className="w-full justify-start" onClick={() => setOauth('google')}>
-            <Marca letra="G" /> Continuar con Google
+            <IconoGoogle /> Continuar con Google
           </Button>
           <Button variante="suave" className="w-full justify-start" onClick={() => setOauth('facebook')}>
-            <Marca letra="f" /> Continuar con Facebook
+            <IconoFacebook /> Continuar con Facebook
           </Button>
         </div>
 

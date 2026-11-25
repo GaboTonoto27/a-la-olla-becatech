@@ -107,11 +107,19 @@ export default function PerfilPuesto() {
           <FotoPuesto puesto={puesto} indice={0} className="h-48" />
           {puesto.fotos.length > 1 && <FotoPuesto puesto={puesto} indice={1} className="h-48" />}
         </div>
+        {puesto.fotos.length > 2 && (
+          <ul className="grid grid-cols-2 gap-px sm:grid-cols-3">
+            {puesto.fotos.slice(2).map((f, i) => (
+              <li key={i}><img src={f} alt={`Puesto ${puesto.nombre}, foto ${i + 3}`} loading="lazy" className="h-32 w-full object-cover" /></li>
+            ))}
+          </ul>
+        )}
         <div className="space-y-3 p-5">
           <div>
             <h1 className="text-3xl">{puesto.nombre}</h1>
             <p className="text-base text-piedra">{puesto.barrio} · Puesto {puesto.formal ? 'formal' : 'informal'}</p>
           </div>
+          {puesto.descripcion && <p className="text-base">{puesto.descripcion}</p>}
           <Sellos vendedorId={puesto.id} completo avisoSinCelular />
           <ul className="space-y-2 text-base">
             <li className="flex gap-2">

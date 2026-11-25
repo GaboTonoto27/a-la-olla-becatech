@@ -107,10 +107,13 @@ export function AppProvider({ children }) {
   const registrar = useCallback(
     (datos) => {
       const r = aplicar(social.crearCuenta, { proveedor: 'clave', ...datos })
-      if (r.ok) entrarCon(r.cuenta)
+      if (r.ok) {
+        entrarCon(r.cuenta)
+        notificar('Código verificado. ¡Cuenta creada!')
+      }
       return r
     },
-    [aplicar, entrarCon],
+    [aplicar, entrarCon, notificar],
   )
 
   // Google y Facebook simulados: la persona confirma sus datos y entra con su propio perfil.
@@ -119,7 +122,10 @@ export function AppProvider({ children }) {
       const existe = ref.current.cuentas.find((c) => social.normalizarCorreo(c.correo) === social.normalizarCorreo(correo))
       if (existe) {
         const r = social.estadoEntrada(existe)
-        if (r.ok) entrarCon(existe)
+        if (r.ok) {
+          entrarCon(existe)
+          notificar('Código verificado. ¡Bienvenido de nuevo!')
+        }
         return r
       }
       const vendedor = rol === 'vendedor' || rol === 'ambos'
@@ -127,10 +133,13 @@ export function AppProvider({ children }) {
         proveedor, nombre, correo, barrio, rol, perfilComprador: 'hogar',
         puesto: vendedor ? { nombre: `Puesto de ${nombre.trim().split(' ')[0]}`, formal: false, plan: 'popular', zona: true, nequi: false, sinCelular: false } : null,
       })
-      if (r.ok) entrarCon(r.cuenta)
+      if (r.ok) {
+        entrarCon(r.cuenta)
+        notificar(vendedor ? 'Código verificado. ¡Cuenta creada! Completa tu puesto en Mi cuenta' : 'Código verificado. ¡Cuenta creada!')
+      }
       return r
     },
-    [aplicar, entrarCon],
+    [aplicar, entrarCon, notificar],
   )
 
   const salir = useCallback(() => setEstado((e) => ({ ...e, usuarioId: null, modo: null })), [])
@@ -323,6 +332,7 @@ export function AppProvider({ children }) {
     sinCelular,
     cambiarSinCelular,
     editarPuesto: (id, cambios) => aplicar(social.editarPuesto, id, cambios),
+    editarCuenta: (id, cambios) => aplicar(social.editarCuenta, id, cambios),
     publicarLote: (d) => confirmar(aplicar(reglas.publicarLote, usuario, ciudad, d, miPuesto), "Lote publicado en 'Pon pa' la olla'"),
     retirarLote: (id) => confirmar(aplicar(reglas.retirarLote, id), 'Lote retirado de tu vitrina'),
     ajustarPrecio: (id, nuevo) => aplicar(reglas.ajustarPrecio, id, nuevo),

@@ -5,6 +5,7 @@ import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import Pill from '../components/ui/Pill.jsx'
 import PanelEconomico from '../components/cuenta/PanelEconomico.jsx'
+import MisDatos from '../components/cuenta/MisDatos.jsx'
 import MiPuestoEditor from '../components/cuenta/MiPuestoEditor.jsx'
 import LlevarCiudadModal from '../components/cuenta/LlevarCiudadModal.jsx'
 import { GarantiaCuota, MisCompras } from '../components/cuenta/MisDevoluciones.jsx'
@@ -35,6 +36,7 @@ export default function Cuenta() {
         </div>
       </Card>
 
+      <MisDatos key={`${usuario.id}-${usuario.nombre}`} />
       {miPuesto && vende && <MiPuestoEditor key={`${miPuesto.id}-${miPuesto.nombre}`} puesto={miPuesto} />}
       <PanelEconomico key={vende ? 'v' : 'c'} />
       {vende ? <GarantiaCuota /> : <MisCompras />}

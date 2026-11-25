@@ -9,7 +9,7 @@ const EFECTIVO = 'Efectivo contra inspección (primero revisas, luego pagas)'
 
 // El puesto se puede cambiar cuando quieras: nombre, tipo, ubicación, pagos, plan y modo sin celular.
 export default function MiPuestoEditor({ puesto }) {
-  const { editarPuesto, cambiarEstandar, sinCelular, cambiarSinCelular, usuario } = useApp()
+  const { editarPuesto, cambiarEstandar, sinCelular, cambiarSinCelular, usuario, notificar } = useApp()
   const inicial = () => ({
     nombre: puesto.nombre,
     formal: Boolean(puesto.formal),
@@ -18,10 +18,21 @@ export default function MiPuestoEditor({ puesto }) {
     nequi: puesto.pagos.some((p) => p.includes('Nequi')),
     sinCelular: sinCelular(usuario.id),
     plan: puesto.plan,
+    direccion: puesto.direccion === 'Ubicación marcada en el mapa' ? '' : puesto.direccion ?? '',
+    horario: puesto.horario ?? '',
+    descripcion: puesto.descripcion ?? '',
+    fotos: puesto.fotos ?? [],
   })
   const [abierto, setAbierto] = useState(false)
   const [f, setF] = useState(inicial)
   const [guardado, setGuardado] = useState(false)
+
+  // Las fotos y la ubicación confirmada se guardan al instante, sin esperar a "Guardar cambios".
+  const cambiarFotos = (fotos) => {
+    setF((v) => ({ ...v, fotos }))
+    editarPuesto(puesto.id, { fotos })
+  }
+  const confirmarUbicacion = (coord) => editarPuesto(puesto.id, { coord, privacidad: f.zona ? 'zona' : 'exacto' })
 
   const guardar = () => {
     editarPuesto(puesto.id, {
@@ -29,6 +40,10 @@ export default function MiPuestoEditor({ puesto }) {
       formal: f.formal,
       plan: f.plan,
       coord: f.coord,
+      direccion: f.direccion.trim() || 'Ubicación marcada en el mapa',
+      horario: f.horario.trim() || puesto.horario,
+      descripcion: f.descripcion.trim(),
+      fotos: f.fotos,
       privacidad: f.zona ? 'zona' : 'exacto',
       pagos: f.nequi && f.formal ? [EFECTIVO, 'Nequi (opcional)'] : [EFECTIVO],
     })
@@ -37,6 +52,7 @@ export default function MiPuestoEditor({ puesto }) {
     cambiarSinCelular(usuario.id, f.sinCelular)
     setGuardado(true)
     setAbierto(false)
+    notificar('Perfil del puesto actualizado')
   }
 
   return (
@@ -59,7 +75,7 @@ export default function MiPuestoEditor({ puesto }) {
       )}
       {abierto && (
         <>
-          <FormPuesto valor={f} onChange={setF} />
+          <FormPuesto valor={f} onChange={setF} puestoId={puesto.id} onFotos={cambiarFotos} onConfirmarUbicacion={confirmarUbicacion} ubicacionActual={usuario.ubicacion ?? null} />
           <div className="grid grid-cols-2 gap-2">
             <Button variante="suave" onClick={() => setAbierto(false)}>Cancelar</Button>
             <Button onClick={guardar} disabled={f.nombre.trim().length < 2 || !f.coord}>Guardar cambios</Button>

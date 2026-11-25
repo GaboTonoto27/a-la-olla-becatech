@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Banknote, Clock, Flag, Map, MapPin, Navigation, ShieldAlert, Star } from 'lucide-react'
+import { ArrowLeft, Banknote, Flag, Map, MapPin, Navigation, ShieldAlert, Star } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { useAhora } from '../lib/useAhora.js'
 import { loteActivo } from '../lib/acciones.js'
@@ -19,6 +19,7 @@ import BotonChat from '../components/chat/BotonChat.jsx'
 import DenunciarModal from '../components/DenunciarModal.jsx'
 import ListaResenas from '../components/resenas/ListaResenas.jsx'
 import { promedioPuesto } from '../lib/social.js'
+import HorarioPuesto from '../components/puestos/HorarioPuesto.jsx'
 import Sellos from '../components/puestos/Sellos.jsx'
 import ComoFuncionanEstandares from '../components/puestos/ComoFuncionanEstandares.jsx'
 
@@ -127,8 +128,8 @@ export default function PerfilPuesto() {
               <MapPin size={20} className="mt-0.5 shrink-0 text-olla" aria-hidden="true" />
               {exacta ? puesto.direccion || 'Ubicación marcada en el mapa' : `Barrio ${puesto.barrio}. La dirección exacta se desbloquea al apartar.`}
             </li>
-            <li className="flex gap-2">
-              <Clock size={20} className="mt-0.5 shrink-0 text-olla" aria-hidden="true" /> {puesto.horario}
+            <li>
+              <HorarioPuesto puesto={puesto} ahora={ahora} ultimaHora />
             </li>
             {puesto.pagos.map((p) => (
               <li key={p} className="flex gap-2">

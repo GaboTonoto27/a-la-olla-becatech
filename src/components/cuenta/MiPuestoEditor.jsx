@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { CheckCircle2, MessageSquareWarning, Pencil, Send, Store } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
+import { horarioDe } from '../../lib/horarioPuesto.js'
 import { ESTADOS, respuestasDe, sugerirPlan, tarifaDe } from '../../lib/planPuesto.js'
 import Card from '../ui/Card.jsx'
 import Button from '../ui/Button.jsx'
 import Pill from '../ui/Pill.jsx'
-import FormPuesto from '../auth/FormPuesto.jsx'
+import FormPuesto, { puestoCompleto } from '../auth/FormPuesto.jsx'
+import HorarioPuesto from '../puestos/HorarioPuesto.jsx'
 
 const EFECTIVO = 'Efectivo contra inspección (primero revisas, luego pagas)'
 
@@ -62,7 +64,7 @@ export default function MiPuestoEditor({ puesto }) {
     sinCelular: sinCelular(usuario.id),
     plan: puesto.plan,
     direccion: puesto.direccion === 'Ubicación marcada en el mapa' ? '' : puesto.direccion ?? '',
-    horario: puesto.horario ?? '',
+    ...(({ dias, horaAbre, horaCierra, texto }) => ({ dias, horaAbre, horaCierra, horario: texto }))(horarioDe(puesto)),
     descripcion: puesto.descripcion ?? '',
     fotos: puesto.fotos ?? [],
   })
@@ -92,7 +94,10 @@ export default function MiPuestoEditor({ puesto }) {
       sugerido,
       coord: f.coord,
       direccion: f.direccion.trim() || 'Ubicación marcada en el mapa',
-      horario: f.horario.trim() || puesto.horario,
+      horario: f.horario,
+      dias: f.dias,
+      horaAbre: f.horaAbre,
+      horaCierra: f.horaCierra,
       descripcion: f.descripcion.trim(),
       fotos: f.fotos,
       privacidad: f.zona ? 'zona' : 'exacto',
@@ -123,6 +128,7 @@ export default function MiPuestoEditor({ puesto }) {
           </Button>
         )}
       </div>
+      <HorarioPuesto puesto={puesto} ultimaHora />
       <EstadoVerificacion puesto={puesto} />
       {guardado && !abierto && (
         <p className="flex items-center gap-2 text-base font-bold text-olla" role="status">
@@ -131,10 +137,10 @@ export default function MiPuestoEditor({ puesto }) {
       )}
       {abierto && (
         <>
-          <FormPuesto valor={f} onChange={setF} puestoId={puesto.id} onFotos={cambiarFotos} onConfirmarUbicacion={confirmarUbicacion} ubicacionActual={usuario.ubicacion ?? null} />
+          <FormPuesto valor={f} onChange={setF} puestoId={puesto.id} onFotos={cambiarFotos} onConfirmarUbicacion={confirmarUbicacion} ubicacionActual={usuario.ubicacion ?? null} barrio={puesto.barrio ?? usuario.barrio} />
           <div className="grid grid-cols-2 gap-2">
             <Button variante="suave" onClick={() => setAbierto(false)}>Cancelar</Button>
-            <Button onClick={guardar} disabled={f.nombre.trim().length < 2 || !f.coord}>Guardar cambios</Button>
+            <Button onClick={guardar} disabled={!puestoCompleto(f)}>Guardar cambios</Button>
           </div>
         </>
       )}

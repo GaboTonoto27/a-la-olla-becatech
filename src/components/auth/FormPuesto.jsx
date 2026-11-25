@@ -1,13 +1,19 @@
 import { lazy, Suspense, useRef, useState } from 'react'
-import { Camera, Home, Trash2 } from 'lucide-react'
+import { Camera, CheckCircle2, Home, Loader2, MapPinned, Trash2 } from 'lucide-react'
 import { PREGUNTAS, RESPUESTAS_VACIAS, sugerirPlan } from '../../lib/planPuesto.js'
 import { MAX_FOTOS, comprimirImagen } from '../../lib/imagen.js'
 import { useApp } from '../../context/AppContext.jsx'
 import Toggle from '../ui/Toggle.jsx'
+import Chip from '../ui/Chip.jsx'
+import Button from '../ui/Button.jsx'
+import { ATAJOS, DIAS, HORAS, POR_DEFECTO, formatoHora, horarioValido, textoHorario } from '../../lib/horarioPuesto.js'
+import { buscarDireccion } from '../../lib/geocodificar.js'
 
 const SelectorUbicacion = lazy(() => import('../mapa/SelectorUbicacion.jsx'))
 
-export const PUESTO_VACIO = { nombre: '', formal: false, coord: null, zona: true, nequi: false, sinCelular: false, plan: 'popular', respuestas: RESPUESTAS_VACIAS, direccion: '', horario: '', descripcion: '', fotos: [] }
+export const PUESTO_VACIO = { nombre: '', formal: false, coord: null, zona: true, nequi: false, sinCelular: false, plan: 'popular', respuestas: RESPUESTAS_VACIAS, direccion: '', ...POR_DEFECTO, horario: textoHorario(POR_DEFECTO.dias, POR_DEFECTO.horaAbre, POR_DEFECTO.horaCierra), descripcion: '', fotos: [] }
+// El formulario del puesto está listo pa' guardar: nombre, punto en el mapa y un horario con días y cierre posterior a la apertura.
+export const puestoCompleto = (v) => v.nombre.trim().length >= 2 && Boolean(v.coord) && horarioValido(v)
 export const campo = 'min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base'
 
 function Opcion({ activa, onClick, icono: Icono, titulo, detalle }) {
@@ -103,10 +109,78 @@ function FotosPuesto({ fotos = [], onChange }) {
   )
 }
 
+// Días en chips, atajos de 1 clic y horas cada 30 minutos. Guarda la estructura y el texto legible.
+function SelectorHorario({ valor, poner }) {
+  const dias = valor.dias ?? POR_DEFECTO.dias
+  const abre = valor.horaAbre ?? POR_DEFECTO.horaAbre
+  const cierra = valor.horaCierra ?? POR_DEFECTO.horaCierra
+  const cambiar = (c) => {
+    const n = { dias, horaAbre: abre, horaCierra: cierra, ...c }
+    if (n.horaCierra <= n.horaAbre) n.horaCierra = Math.min(HORAS[HORAS.length - 1], n.horaAbre + 60) // el cierre siempre es después de abrir
+    poner({ ...n, horario: textoHorario(n.dias, n.horaAbre, n.horaCierra) })
+  }
+  const alternar = (i) => cambiar({ dias: dias.includes(i) ? dias.filter((x) => x !== i) : [...dias, i].sort((a, b) => a - b) })
+  const mismos = (a) => a.length === dias.length && a.every((x) => dias.includes(x))
+  const selec = 'min-h-[48px] w-full rounded-xl border border-borde bg-white px-3 text-base'
+  return (
+    <fieldset className="space-y-3" data-testid="selector-horario">
+      <legend className="mb-1 text-base font-bold">Horario de atención</legend>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Atajos de días">
+        {ATAJOS.map((a) => (
+          <Chip key={a.id} activo={mismos(a.dias)} onClick={() => cambiar({ dias: a.dias })}>{a.etiqueta}</Chip>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Días de atención">
+        {DIAS.map((d, i) => (
+          <Chip key={d} activo={dias.includes(i)} onClick={() => alternar(i)}>{d}</Chip>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="block text-sm font-semibold">
+          Abres a las
+          <select className={`mt-1 ${selec}`} value={abre} onChange={(e) => cambiar({ horaAbre: Number(e.target.value) })} aria-label="Hora de apertura">
+            {HORAS.slice(0, -1).map((h) => <option key={h} value={h}>{formatoHora(h)}</option>)}
+          </select>
+        </label>
+        <label className="block text-sm font-semibold">
+          Cierras a las
+          <select className={`mt-1 ${selec}`} value={cierra} onChange={(e) => cambiar({ horaCierra: Number(e.target.value) })} aria-label="Hora de cierre">
+            {HORAS.filter((h) => h > abre).map((h) => <option key={h} value={h}>{formatoHora(h)}</option>)}
+          </select>
+        </label>
+      </div>
+      {dias.length === 0 ? (
+        <p role="alert" className="text-base font-bold text-[#A8391B]">Elige al menos un día de atención.</p>
+      ) : (
+        <p className="text-base" data-testid="horario-texto">Se verá así: <b>{textoHorario(dias, abre, cierra)}</b></p>
+      )}
+    </fieldset>
+  )
+}
+
 // Alta rápida (y edición) de un puesto en una sola pantalla.
-export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFotos, onConfirmarUbicacion, ubicacionActual = null }) {
+export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFotos, onConfirmarUbicacion, ubicacionActual = null, barrio = '' }) {
   const { notificar } = useApp()
   const poner = (c) => onChange({ ...valor, ...c })
+  const [busq, setBusq] = useState({ estado: 'idle' }) // idle | buscando | confirmar | ajustar | listo | nada
+  const [foco, setFoco] = useState(null)
+  const mapaRef = useRef(null)
+
+  // Dirección escrita → punto en el mapa (Nominatim, solo Barranquilla). El vendedor confirma o ajusta el punto.
+  const ubicarDireccion = async () => {
+    setBusq({ estado: 'buscando' })
+    const r = await buscarDireccion(valor.direccion, barrio)
+    if (!r.ok) return setBusq({ estado: 'nada', error: r.error })
+    poner({ coord: r.punto })
+    setFoco({ punto: r.punto, n: Date.now() })
+    setBusq({ estado: 'confirmar', punto: r.punto, nombre: r.nombre, aprox: r.aprox })
+    mapaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+  const confirmarBusqueda = () => {
+    onConfirmarUbicacion?.(busq.punto)
+    notificar('Ubicación del puesto confirmada')
+    setBusq({ ...busq, estado: 'listo' })
+  }
   const r = valor.respuestas ?? RESPUESTAS_VACIAS
   const sugerido = sugerirPlan(r)
   // Las respuestas mandan: la refrigeración define si es "formal" (nevera) y el plan sugerido sale de ellas.
@@ -124,12 +198,13 @@ export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFoto
 
       <div>
         <label htmlFor="puesto-dir" className="mb-1 block text-base font-bold">Dirección escrita</label>
-        <input id="puesto-dir" className={campo} value={valor.direccion ?? ''} maxLength={90} onChange={(e) => poner({ direccion: e.target.value })} placeholder="Ej.: Cra. 6 Sur #47-14, local 3" autoComplete="off" />
+        <input id="puesto-dir" className={campo} value={valor.direccion ?? ''} maxLength={90} onChange={(e) => { poner({ direccion: e.target.value }); if (busq.estado !== 'idle') setBusq({ estado: 'idle' }) }} placeholder="Ej.: Carrera 6 B Sur # 47 D - 37" autoComplete="off" />
+        <Button variante="contorno" icono={busq.estado === 'buscando' ? Loader2 : MapPinned} className="mt-2 w-full" onClick={ubicarDireccion} disabled={busq.estado === 'buscando' || (valor.direccion ?? '').trim().length < 4}>
+          {busq.estado === 'buscando' ? 'Buscando la dirección…' : 'Ubicar dirección en el mapa'}
+        </Button>
+        {busq.estado === 'nada' && <p role="alert" className="mt-2 text-base font-bold text-[#A8391B]">{busq.error}</p>}
       </div>
-      <div>
-        <label htmlFor="puesto-horario" className="mb-1 block text-base font-bold">Horario</label>
-        <input id="puesto-horario" className={campo} value={valor.horario ?? ''} maxLength={60} onChange={(e) => poner({ horario: e.target.value })} placeholder="Lun–Sáb 6:00 a. m. – 4:00 p. m." autoComplete="off" />
-      </div>
+      <SelectorHorario valor={valor} poner={poner} />
       <div>
         <label htmlFor="puesto-desc" className="mb-1 block text-base font-bold">Descripción <span className="font-medium text-piedra">(opcional)</span></label>
         <textarea id="puesto-desc" rows={2} className={`${campo} py-2`} value={valor.descripcion ?? ''} maxLength={200} onChange={(e) => poner({ descripcion: e.target.value })} placeholder="Ej.: Frutas y verduras pa' guiso, jugo y sopa." />
@@ -157,6 +232,23 @@ export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFoto
       <div>
         <h3 className="mb-1 text-lg font-bold" data-testid="ubicacion-puesto">Ubicación de mi puesto (para vender)</h3>
         <p className="mb-2 text-sm text-piedra">Tu puesto puede estar en un lugar distinto a donde te encuentras ahora (ideal si configuras desde casa).</p>
+        <div ref={mapaRef} />
+        {(busq.estado === 'confirmar' || busq.estado === 'listo') && (
+          <div className="mb-3 space-y-3 rounded-2xl border border-olla bg-[#E7F1EA] p-4" role="group" aria-label="¿Esta es la dirección de tu puesto?" data-testid="confirmar-direccion">
+            <p className="flex items-center gap-2 text-lg font-bold"><MapPinned size={22} className="text-olla" aria-hidden="true" /> ¿Esta es la dirección de tu puesto?</p>
+            <p className="text-base"><b>{busq.nombre || valor.direccion}</b></p>
+            {busq.aprox && <p className="text-sm font-semibold text-ambar">Encontramos la calle, no el número exacto: es una zona aproximada. Si hace falta, ajusta el pin.</p>}
+            {busq.estado === 'confirmar' ? (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Button icono={CheckCircle2} onClick={confirmarBusqueda}>Sí, confirmar punto</Button>
+                <Button variante="contorno" onClick={() => setBusq({ ...busq, estado: 'ajustar' })}>Ajustar punto yo mismo</Button>
+              </div>
+            ) : (
+              <p className="flex items-center gap-2 text-base font-bold text-olla"><CheckCircle2 size={20} aria-hidden="true" /> Punto confirmado.</p>
+            )}
+          </div>
+        )}
+        {busq.estado === 'ajustar' && <p className="mb-2 text-base font-semibold text-olla" role="status">Listo: toca el mapa o arrastra el pin hasta tu puesto y pulsa "Confirmar ubicación".</p>}
         <Suspense fallback={<p className="flex h-56 items-center justify-center rounded-2xl border border-borde bg-white text-piedra">Cargando el mapa…</p>}>
           <SelectorUbicacion
             modo="puesto"
@@ -167,6 +259,7 @@ export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFoto
             etiquetaGps="Estoy en mi puesto (usar mi GPS)"
             valor={valor.coord}
             referencia={ubicacionActual}
+            foco={foco}
             onChange={(coord) => poner({ coord })}
             onConfirmar={(c) => {
               onConfirmarUbicacion?.(c)

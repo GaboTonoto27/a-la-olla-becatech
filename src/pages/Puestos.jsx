@@ -13,6 +13,7 @@ import Button from '../components/ui/Button.jsx'
 import Pill from '../components/ui/Pill.jsx'
 import AvisoPlaza from '../components/layout/AvisoPlaza.jsx'
 import FotoPuesto from '../components/puestos/FotoPuesto.jsx'
+import HorarioPuesto from '../components/puestos/HorarioPuesto.jsx'
 import Sellos from '../components/puestos/Sellos.jsx'
 import ComoFuncionanEstandares from '../components/puestos/ComoFuncionanEstandares.jsx'
 
@@ -86,6 +87,7 @@ export default function Puestos() {
                     </p>
                   )}
                 </div>
+                <HorarioPuesto puesto={p} ahora={ahora} compacto />
                 <Sellos vendedorId={p.id} avisoSinCelular />
                 <div className="mt-auto flex items-center justify-between gap-2">
                   {p.lotes.length > 0 ? (

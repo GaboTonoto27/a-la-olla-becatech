@@ -1,5 +1,6 @@
 // Reglas de Última Hora y Pide pa' tu Olla. Todas son funciones puras: reciben el estado y devuelven el nuevo.
 import { proximoCierre } from './tiempo.js'
+import { proximoCierrePuesto } from './horarioPuesto.js'
 import { PERFILES, semilla } from '../data/semilla.js'
 import { PERFILES_COMPRADOR, USUARIOS_DEMO } from '../data/seed.js'
 import { bloqueada, nombreVisible } from './social.js'
@@ -72,7 +73,7 @@ export function publicarLote(e, usuario, ciudad, d, puesto, ahora = Date.now()) 
     frio: formal,
     demo: false,
     creado: ahora,
-    vence: proximoCierre(ahora),
+    vence: (puesto && proximoCierrePuesto(puesto, ahora)) || proximoCierre(ahora), // cierre real del puesto
     cantidadInicial: d.cantidad,
     ...d,
   }

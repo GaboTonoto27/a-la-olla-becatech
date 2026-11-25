@@ -18,6 +18,7 @@ import ApartadoVendedor from '../components/lotes/ApartadoVendedor.jsx'
 import PublicarLote from '../components/lotes/PublicarLote.jsx'
 import SinCelularCard from '../components/SinCelularCard.jsx'
 import AvisoPlaza from '../components/layout/AvisoPlaza.jsx'
+import HorarioPuesto from '../components/puestos/HorarioPuesto.jsx'
 import AjustarPrecioModal from '../components/lotes/AjustarPrecioModal.jsx'
 import ComoFuncionanEstandares from '../components/puestos/ComoFuncionanEstandares.jsx'
 import { cant } from '../lib/unidades.js'
@@ -122,7 +123,7 @@ function Comprador({ ahora }) {
 }
 
 function Vendedor({ ahora }) {
-  const { lotes, apartados, usuario, ciudad, retirarLote } = useApp()
+  const { lotes, apartados, usuario, ciudad, retirarLote, miPuesto } = useApp()
   const [ajustando, setAjustando] = useState(null)
   const mios = lotes.filter((l) => l.vendedorId === usuario.id && l.ciudad === ciudad.id && loteActivo(l, ahora))
   const porAtender = apartados.filter(
@@ -137,6 +138,12 @@ function Vendedor({ ahora }) {
       </div>
       <AvisoPlaza />
       <AvisoCierre ahora={ahora} />
+      {miPuesto && (
+        <Card className="space-y-1">
+          <p className="text-lg font-bold">Tu horario y tu ventana de Última hora</p>
+          <HorarioPuesto puesto={miPuesto} ahora={ahora} ultimaHora />
+        </Card>
+      )}
       <Accesos />
       <SinCelularCard />
 

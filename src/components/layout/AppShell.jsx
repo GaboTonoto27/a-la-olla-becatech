@@ -14,7 +14,7 @@ export default function AppShell() {
   const esAdmin = usuario?.rol === 'admin'
 
   return (
-    <div className="min-h-dvh">
+    <div className={`min-h-dvh ${esAdmin ? '' : 'fondo-navidad'}`}>
       <BannerPrototipo />
       <Header />
       <main className={`mx-auto max-w-5xl px-4 py-6 ${esAdmin ? '' : 'pb-28 md:pb-10'}`}>

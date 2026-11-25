@@ -32,6 +32,7 @@ export default function SelectorUbicacion({
   etiquetaGps = 'Usar mi ubicación',
   etiquetaPin = 'Tu puesto',
   pregunta = null,
+  foco = null,
 }) {
   const { notificar } = useApp()
   const esPuesto = modo === 'puesto'
@@ -98,6 +99,11 @@ export default function SelectorUbicacion({
     if (yo.current) yo.current.setLatLng(mia)
     else yo.current = L.marker(mia, { icon: YO, title: 'Tú estás aquí', interactive: false, keyboard: false }).addTo(m)
   }, [mia, esPuesto])
+
+  // Una búsqueda de dirección pide centrar el mapa con vuelo suave.
+  useEffect(() => {
+    if (foco?.punto && mapa.current) mapa.current.flyTo(foco.punto, 17, { duration: 0.6 })
+  }, [foco?.n]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const usarGps = () => {
     if (!('geolocation' in navigator)) return setGps('error')

@@ -15,6 +15,8 @@ import Pill from '../components/ui/Pill.jsx'
 import AvisoPlaza from '../components/layout/AvisoPlaza.jsx'
 import { SelloFrio } from '../components/puestos/Sellos.jsx'
 import { PedidoVendedor } from '../components/pedidos/PedidoCard.jsx'
+import { estadoPuesto, horarioDe } from '../lib/horarioPuesto.js'
+import HorarioPuesto from '../components/puestos/HorarioPuesto.jsx'
 import ComoFuncionanEstandares from '../components/puestos/ComoFuncionanEstandares.jsx'
 import MapaLeaflet from '../components/mapa/MapaLeaflet.jsx'
 
@@ -119,7 +121,7 @@ export default function Mapa() {
       }
       return {
         id: ent.id, lat: f.punto[0], lng: f.punto[1], aprox: f.aprox, tipo: f.frio ? 'frio' : 'ambiente', titulo: ent.nombre,
-        lineas: [f.frio ? 'Con nevera / cuarto frío' : 'Sin nevera · Al ambiente (consumo hoy)', f.nLotes ? `${cant(f.nLotes, 'lote')} hoy` : 'Sin lotes hoy', dist].filter(Boolean),
+        lineas: [f.frio ? 'Con nevera / cuarto frío' : 'Sin nevera · Al ambiente (consumo hoy)', f.nLotes ? `${cant(f.nLotes, 'lote')} hoy` : 'Sin lotes hoy', ent.tipo === 'puesto' ? `${estadoPuesto(ent, ahora).texto} · ${horarioDe(ent).texto}` : null, dist].filter(Boolean),
         aviso: f.aprox ? AVISO_ZONA : null,
         accion: { etiqueta: ent.id === usuario.id ? 'Ver cómo se ve tu puesto' : f.nLotes ? 'Ver lotes' : 'Ver puesto', valor: `puesto:${ent.id}` },
       }
@@ -236,6 +238,7 @@ export default function Mapa() {
                   </div>
 
                   {!vende && <SelloFrio frio={f.frio} />}
+                  {!vende && ent.tipo === 'puesto' && <HorarioPuesto puesto={ent} ahora={ahora} compacto />}
 
                   {f.aprox ? (
                     <p className="flex items-start gap-2 text-sm font-semibold text-ambar">

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 // Modal accesible. Si `cerrable` es false, no se puede cerrar sin responder (ej. el Pacto).
-export default function Modal({ titulo, cerrable = false, onCerrar, children, pie }) {
+export default function Modal({ titulo, cerrable = false, onCerrar, children, pie, festivo = false }) {
   useEffect(() => {
     const previo = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -23,7 +23,7 @@ export default function Modal({ titulo, cerrable = false, onCerrar, children, pi
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
-        className="flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-3xl border border-borde bg-marfil sm:rounded-3xl"
+        className={`flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-3xl border border-borde bg-marfil sm:rounded-3xl ${festivo ? 'fondo-navidad' : ''}`}
       >
         <div className="overflow-y-auto px-5 pb-2 pt-5">
           <h2 className="mb-2 text-2xl text-olla">{titulo}</h2>

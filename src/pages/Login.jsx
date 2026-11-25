@@ -11,7 +11,7 @@ import Chip from '../components/ui/Chip.jsx'
 import Logo from '../components/ui/Logo.jsx'
 import LucesNavidad from '../components/ui/LucesNavidad.jsx'
 import Toast from '../components/ui/Toast.jsx'
-import FormPuesto, { PUESTO_VACIO, campo } from '../components/auth/FormPuesto.jsx'
+import FormPuesto, { PUESTO_VACIO, campo, puestoCompleto } from '../components/auth/FormPuesto.jsx'
 import OAuthModal from '../components/auth/OAuthModal.jsx'
 import CuentasDemo from '../components/auth/CuentasDemo.jsx'
 
@@ -109,11 +109,12 @@ function CrearCuenta() {
           <h2 className="text-2xl">Tu puesto</h2>
           <p className="text-base text-piedra">Una sola pantalla. Después lo cambias cuando quieras en Mi cuenta.</p>
         </div>
-        <FormPuesto valor={puesto} onChange={setPuesto} />
-        <Button type="submit" className="w-full" disabled={puesto.nombre.trim().length < 2 || !puesto.coord}>
+        <FormPuesto valor={puesto} onChange={setPuesto} barrio={f.barrio} />
+        <Button type="submit" className="w-full" disabled={!puestoCompleto(puesto)}>
           Crear mi cuenta y mi puesto
         </Button>
         {!puesto.coord && <p className="text-sm text-piedra">Marca tu puesto en el mapa pa' poder seguir.</p>}
+        {puesto.coord && !puestoCompleto(puesto) && <p className="text-sm text-piedra">Revisa el nombre y el horario (al menos un día).</p>}
       </form>
     )
   }
@@ -202,7 +203,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-dvh fondo-navidad">
       <BannerPrototipo />
       <LucesNavidad />
       <main className="mx-auto max-w-xl px-4 py-8">

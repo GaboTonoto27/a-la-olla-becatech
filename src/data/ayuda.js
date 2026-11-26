@@ -59,7 +59,7 @@ export const PREGUNTAS = [
     claves: ['cuesta', 'cuota', 'plan', 'precio', 'cobra', 'suscripcion', 'comision', 'formal', 'popular', 'semana'],
     pasos: [
       'Plan Formal (puesto con nevera): $10.000 COP por semana.',
-      'Plan Popular (puesto informal): entre $0 y $3.000 COP por semana, según lo que recuperes.',
+      'Plan Popular (puesto informal): $0, $1.500 o $3.000 COP por semana, según el tramo que asigna el equipo a tu puesto.',
       'La cuota solo corre desde tu primera entrega. Antes de eso no pagas nada.',
       'El Formal sube entre 5% y 10% solo si pasas de 100 ventas en la semana.',
       'Mira en "Mi cuenta" cuánto ganaste frente a la cuota.',

@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
 import { totalesDevueltos } from '../../lib/devoluciones.js'
 import { tarifaDe } from '../../lib/planPuesto.js'
-import { COSTOS_MES, COSTO_TOTAL_MES, CUOTA_FORMAL, META_PUESTOS, PROMEDIO_POPULAR, kilosDe, sostenibilidad } from '../../lib/economia.js'
+import { COSTOS_MES, COSTO_TOTAL_MES, CUOTA_FORMAL, META_PUESTOS, PROMEDIO_POPULAR, bolsasDe, kilosDe, sostenibilidad, textoRescate } from '../../lib/economia.js'
 import Card from '../../components/ui/Card.jsx'
 import Pill from '../../components/ui/Pill.jsx'
 import Metodologia from '../../components/ui/Metodologia.jsx'
@@ -27,18 +27,19 @@ function Linea({ k, v, fuerte, tono }) {
 }
 
 export default function TabResumen() {
-  const { apartados, puestos, lotes, cuentas, devoluciones } = useApp()
+  const { apartados, puestos, lotes, cuentas, devoluciones, ciudad } = useApp()
   const dev = useMemo(() => totalesDevueltos(devoluciones), [devoluciones])
   const datos = useMemo(() => {
     const entregas = apartados.filter((a) => a.estado === 'entregado')
     const kg = entregas.reduce((s, a) => s + kilosDe(a.unidad, a.cantidad), 0)
+    const bolsas = entregas.reduce((s, a) => s + bolsasDe(a.unidad, a.cantidad), 0)
     const cop = entregas.reduce((s, a) => s + a.total, 0) - dev.compras
-    const activos = puestos.filter((p) => p.tipo === 'puesto')
+    const activos = puestos.filter((p) => p.tipo === 'puesto' && p.ciudad === ciudad.id) // solo el piloto (Barranquilla)
     const formales = activos.filter((p) => p.plan === 'formal').length
     const populares = activos.length - formales
     const semanaReal = activos.reduce((s, p) => s + tarifaDe(p), 0) // cuotas asignadas por el equipo
-    return { entregas: entregas.length, kg, cop, activos: activos.length, formales, populares, semanaReal }
-  }, [apartados, puestos, dev.compras])
+    return { entregas: entregas.length, kg, bolsas, cop, activos: activos.length, formales, populares, semanaReal }
+  }, [apartados, puestos, dev.compras, ciudad.id])
 
   const hoy = sostenibilidad(datos.formales, datos.populares, datos.semanaReal)
   const cuotasDevueltas = dev.cuotas + dev.saldos
@@ -54,7 +55,7 @@ export default function TabResumen() {
     <div className="space-y-5">
       <Metodologia />
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Cifras globales">
-        <Cifra valor={`${String(Math.round(datos.kg * 10) / 10).replace('.', ',')} kg`} etiqueta="Kilos rescatados" />
+        <Cifra valor={textoRescate(Math.round(datos.kg * 10) / 10, datos.bolsas)} etiqueta="Rescatado" />
         <Cifra valor={dinero(datos.cop)} etiqueta="Plata recuperada (COP)" />
         <Cifra valor={datos.activos} etiqueta="Puestos activos" />
         <Cifra valor={datos.entregas} etiqueta="Entregas completadas" />

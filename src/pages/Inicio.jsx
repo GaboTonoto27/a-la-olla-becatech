@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext.jsx'
 import { useAhora } from '../lib/useAhora.js'
 import { loteActivo } from '../lib/acciones.js'
 import { dinero } from '../lib/dinero.js'
-import { resumenSemana } from '../lib/economia.js'
+import { resumenSemana, textoRescate } from '../lib/economia.js'
 import { textoRestanteLote } from '../lib/horario.js'
 import AvisoHorario from '../components/layout/AvisoHorario.jsx'
 import Card from '../components/ui/Card.jsx'
@@ -98,7 +98,7 @@ export default function Inicio() {
               <Pill tono={miPuesto?.plan === 'formal' ? 'frio' : 'ambar'}>{miPuesto?.plan === 'formal' ? 'Plan Formal' : 'Plan Popular'}</Pill>
               {estandaresDe(usuario.id).frio && <Pill tono="frio">Con nevera</Pill>}
             </div>
-            <p className="text-lg font-bold">Esta semana: {String(semana.kilos).replace('.', ',')} kg rescatados · {dinero(semana.ingresos)} recuperados</p>
+            <p className="text-lg font-bold">Esta semana: {textoRescate(semana.kilos, semana.bolsas)} rescatados · {dinero(semana.ingresos)} recuperados</p>
             <Button to="/ganancias" variante="contorno" icono={TrendingUp} className="w-full sm:w-auto">Ver ganancias y consejos</Button>
           </Card>
           <div className="grid gap-4 md:grid-cols-2">

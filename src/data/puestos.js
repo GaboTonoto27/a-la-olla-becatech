@@ -9,30 +9,30 @@ const HORARIO_CORTO = 'Lun–Sáb 6:00 a. m. – 3:00 p. m.'
 export const PUESTOS = [
   // Barranquilla — piloto real
   {
-    id: 'edwin', ciudad: 'bq', tipo: 'puesto', nombre: 'Fruver LMC', barrio: 'Ciudadela 20 de Julio',
+    id: 'edwin', ciudad: 'bq', tipo: 'puesto', tarifa: 10000, nombre: 'Fruver LMC', barrio: 'Ciudadela 20 de Julio',
     direccion: 'Cra. 6 Sur #47-14', coord: [10.9291009, -74.8055565], privacidad: 'exacto', formal: true,
     fotos: ['/fotos/puesto-lmc.jpg', '/fotos/lmc-neveras.jpg'], horario: HORARIO,
     pagos: [PAGO_EFECTIVO, 'Nequi (opcional)'], estandares: E(true, true, true, true, false, true),
   },
   {
-    id: 'ana', ciudad: 'bq', tipo: 'puesto', nombre: 'Puesto Ana', barrio: 'Metrocentro',
+    id: 'ana', ciudad: 'bq', tipo: 'puesto', tarifa: 1500, nombre: 'Puesto Ana', barrio: 'Metrocentro',
     direccion: 'Cra. 1A con Cll 45A, frente a Metrocentro', coord: [10.9303258, -74.8003184], privacidad: 'zona', formal: false,
     fotos: ['/fotos/puesto-metrocentro.jpg'], horario: HORARIO_CORTO,
     pagos: [PAGO_EFECTIVO], estandares: E(false, true, false, true, false, false),
   },
   {
-    id: 'mana', ciudad: 'bq', tipo: 'puesto', nombre: 'Fruvers El Maná', barrio: 'La 49',
+    id: 'mana', ciudad: 'bq', tipo: 'puesto', tarifa: 10000, nombre: 'Fruvers El Maná', barrio: 'La 49',
     direccion: 'Cll 49 (La 49)', coord: [10.9238953, -74.8118909], privacidad: 'exacto', formal: true,
     fotos: [], horario: 'Lun–Sáb 5:30 a. m. – 4:00 p. m.', pagos: [PAGO_EFECTIVO, 'Nequi (opcional)'],
     estandares: E(true, true, true, false, true, true),
   },
   {
-    id: 'chelo', ciudad: 'bq', tipo: 'puesto', nombre: 'Fruver Don Chelo', barrio: 'Ciudadela 20 de Julio',
+    id: 'chelo', ciudad: 'bq', tipo: 'puesto', tarifa: 10000, nombre: 'Fruver Don Chelo', barrio: 'Ciudadela 20 de Julio',
     direccion: 'Cra. 4 Sur con Cll 47', coord: [10.9237, -74.8013], privacidad: 'exacto', formal: true, muestra: true,
     fotos: [], horario: HORARIO, pagos: [PAGO_EFECTIVO, 'Nequi (opcional)'], estandares: E(true, true, true, true, false, true),
   },
   {
-    id: 'esquina', ciudad: 'bq', tipo: 'puesto', nombre: 'Frutas La Esquina', barrio: 'Metropolitana',
+    id: 'esquina', ciudad: 'bq', tipo: 'puesto', tarifa: 1500, nombre: 'Frutas La Esquina', barrio: 'Metropolitana',
     direccion: 'Cra. 2 con Cll 46', coord: [10.9289, -74.8089], privacidad: 'zona', formal: false, muestra: true,
     fotos: [], horario: 'Lun–Sáb 6:00 a. m. – 2:00 p. m.', pagos: [PAGO_EFECTIVO], estandares: E(false, false, true, true, false, false),
   },

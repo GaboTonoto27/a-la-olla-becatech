@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Lock } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
@@ -26,7 +27,10 @@ export default function AppShell() {
           </p>
         )}
         {!esAdmin && <AvisosCuenta />}
-        <Outlet />
+        {/* Suspense aquí: si la página tarda en cargar, el Pacto y el menú no se desmontan (no se pierden las casillas marcadas). */}
+        <Suspense fallback={<p className="p-8 text-center text-lg font-semibold text-piedra">Cargando…</p>}>
+          <Outlet />
+        </Suspense>
       </main>
       {!esAdmin && <BottomNav />}
       {!esAdmin && <AyudanteFlotante />}

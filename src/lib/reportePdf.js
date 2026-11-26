@@ -1,4 +1,5 @@
 // Reporte semanal en PDF. Este archivo solo se carga al tocar "Descargar", y jsPDF se carga recién ahí.
+import { textoRescate } from './economia.js'
 const dinero = (n) => '$' + new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(Math.round(n))
 const dia = (t) => new Date(t).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' })
 const diaLargo = (t) => new Date(t).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -42,8 +43,8 @@ export async function descargarReporte(datos) {
   // Cifras principales
   y += 12
   const cifras = vendedor
-    ? [['Kilos rescatados', `${String(r.kilos).replace('.', ',')} kg`], ['Ingresos de la semana', dinero(r.ingresos)], ['Entregas completadas', String(r.entregas.length)]]
-    : [['Kilos comprados', `${String(r.kilos).replace('.', ',')} kg`], ['Plata ahorrada', dinero(r.ahorro)], ['Compras completadas', String(r.entregas.length)]]
+    ? [['Rescatado', textoRescate(r.kilos, r.bolsas)], ['Ingresos de la semana', dinero(r.ingresos)], ['Entregas completadas', String(r.entregas.length)]]
+    : [['Comprado', textoRescate(r.kilos, r.bolsas)], ['Plata ahorrada', dinero(r.ahorro)], ['Compras completadas', String(r.entregas.length)]]
   cifras.forEach(([etiqueta, valor], i) => {
     const x = 15 + i * 62
     doc.setDrawColor(231, 226, 216)

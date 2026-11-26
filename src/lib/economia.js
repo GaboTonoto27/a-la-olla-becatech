@@ -7,7 +7,14 @@ const SEMANAS_MES = 4.33
 
 export const PLANES = {
   formal: { id: 'formal', nombre: 'Plan Formal', precio: '$10.000 COP/sem', detalle: 'Puesto con nevera. Cuota fija por semana.' },
-  popular: { id: 'popular', nombre: 'Plan Popular', precio: '$0 a $3.000 COP/sem', detalle: 'Puesto informal. Pagas según lo que recuperas.' },
+  popular: { id: 'popular', nombre: 'Plan Popular', precio: '$0 a $3.000 COP/sem', detalle: 'Puesto informal. Pagas el tramo que asigna el equipo.' },
+}
+
+// Lo que se vende por bolsa no se pesa: se cuenta aparte pa' no mostrar "0 kg" con plata recuperada.
+export const bolsasDe = (unidad, cantidad) => (unidad === 'bolsa' ? cantidad : 0)
+export const textoRescate = (kilos, bolsas) => {
+  const kg = `${String(kilos).replace('.', ',')} kg`
+  return bolsas > 0 ? (kilos > 0 ? `${kg} y ${bolsas} ${bolsas === 1 ? 'bolsa' : 'bolsas'}` : `${bolsas} ${bolsas === 1 ? 'bolsa' : 'bolsas'}`) : kg
 }
 
 export function kilosDe(unidad, cantidad) {
@@ -16,13 +23,13 @@ export function kilosDe(unidad, cantidad) {
   return 0
 }
 
-// Cuota de la semana: el plan Formal cuesta $10.000 y el Popular el 5% de lo recuperado (tope $3.000).
-// En el prototipo la cuota solo corre desde la primera entrega confirmada.
+// Cuota de la semana: la tarifa que asigna el equipo ($10.000 Formal; $0, $1.500 o $3.000 Popular).
+// Mientras el equipo no confirma, se usa la sugerida del plan. En el prototipo la cuota solo corre desde la primera entrega confirmada.
 export function cuotaSemana(plan, ingresos, entregas, tarifa) {
   if (!entregas) return 0
   if (typeof tarifa === 'number') return tarifa // tarifa definitiva confirmada por el equipo
   if (plan === 'formal') return CUOTA_FORMAL
-  return Math.min(CUOTA_POPULAR_MAX, Math.round((ingresos * 0.05) / 100) * 100)
+  return PROMEDIO_POPULAR
 }
 
 // devoluciones: las aprobadas descuentan la plata devuelta al comprador y suman la cuota devuelta al vendedor.
@@ -41,6 +48,7 @@ export function resumenSemana(apartados, usuarioId, comoVendedor, plan, ahora = 
   const saldoFavor = cuotaOk.filter((d) => d.tipo === 'saldo').reduce((s, d) => s + d.monto, 0)
 
   const kilos = entregas.reduce((s, a) => s + kilosDe(a.unidad, a.cantidad), 0)
+  const bolsas = entregas.reduce((s, a) => s + bolsasDe(a.unidad, a.cantidad), 0)
   const ingresos = entregas.reduce((s, a) => s + a.total, 0) - devuelto
   const ahorro = entregas
     .filter((a) => !reembolsadas.has(a.id))
@@ -49,6 +57,7 @@ export function resumenSemana(apartados, usuarioId, comoVendedor, plan, ahora = 
   return {
     entregas,
     kilos: Math.round(kilos * 10) / 10,
+    bolsas,
     ingresos,
     ahorro,
     devuelto,

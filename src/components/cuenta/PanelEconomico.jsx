@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FileDown, Loader2, PackageOpen } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
-import { PLANES, resumenSemana } from '../../lib/economia.js'
+import { PLANES, resumenSemana, textoRescate } from '../../lib/economia.js'
 import { tarifaDe } from '../../lib/planPuesto.js'
 import Card from '../ui/Card.jsx'
 import Button from '../ui/Button.jsx'
@@ -47,7 +47,7 @@ export default function PanelEconomico() {
   const plan = miPuesto?.plan ?? 'popular'
   const r = resumenSemana(apartados, usuario.id, vendedor, plan, Date.now(), devoluciones, miPuesto?.tarifa)
   const maximo = Math.max(r.ingresos, r.cuota)
-  const definitiva = miPuesto?.verificacion?.estado === 'verificado' && typeof miPuesto?.tarifa === 'number'
+  const definitiva = (!miPuesto?.verificacion || miPuesto.verificacion.estado === 'verificado') && typeof miPuesto?.tarifa === 'number'
   const tarifa = tarifaDe(miPuesto)
 
   const descargar = async () => {
@@ -74,13 +74,13 @@ export default function PanelEconomico() {
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {vendedor ? (
           <>
-            <Cifra valor={`${String(r.kilos).replace('.', ',')} kg`} etiqueta="Kilos rescatados" />
+            <Cifra valor={textoRescate(r.kilos, r.bolsas)} etiqueta={r.kilos === 0 && r.bolsas > 0 ? 'Bolsas rescatadas' : 'Rescatado'} />
             <Cifra ancha valor={dinero(r.ingresos)} etiqueta="Plata recuperada" />
             <Cifra valor={r.entregas.length} etiqueta="Entregas completadas" />
           </>
         ) : (
           <>
-            <Cifra valor={`${String(r.kilos).replace('.', ',')} kg`} etiqueta="Kilos comprados" />
+            <Cifra valor={textoRescate(r.kilos, r.bolsas)} etiqueta={r.kilos === 0 && r.bolsas > 0 ? 'Bolsas compradas' : 'Comprado'} />
             <Cifra ancha valor={dinero(r.ahorro)} etiqueta="Plata ahorrada" />
             <Cifra valor={r.entregas.length} etiqueta="Compras completadas" />
           </>
@@ -127,7 +127,7 @@ export default function PanelEconomico() {
           <p className="text-sm text-piedra">
             {definitiva ? `${PLANES[plan].nombre}: tarifa fija de ${dinero(tarifa)} por semana. ` : plan === 'formal'
               ? 'Plan Formal: $10.000 COP/sem. La cuota ajusta de forma progresiva entre 5% y 10% solo después de superar 100 ventas por semana.'
-              : 'Plan Popular: de $0 a $3.000 COP/sem, según lo que recuperes (5%, con tope de $3.000).'}{' '}
+              : 'Plan Popular: $0, $1.500 o $3.000 COP/sem, según el tramo que asigna el equipo a tu puesto.'}{' '}
             La cuota corre desde tu primera entrega.
           </p>
         </div>

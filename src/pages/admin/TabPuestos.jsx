@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MapPin, Store } from 'lucide-react'
+import { MapPin, Store, Ticket } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
 import { dinero } from '../../lib/dinero.js'
 import { APROBACIONES, ESTADOS, PREGUNTAS, metodoDe, respuestasDe, sugerirPlan, tarifaDe } from '../../lib/planPuesto.js'
@@ -83,6 +83,62 @@ function Fila({ p }) {
   )
 }
 
+// Ticket de apelación: el vendedor pide revisar su tarifa. El Admin la mantiene o la cambia, siempre con nota.
+function FilaApelacion({ t }) {
+  const { resolverApelacion, notificar } = useApp()
+  const [nota, setNota] = useState('')
+  const [error, setError] = useState('')
+  const decidir = (id) => {
+    const r = resolverApelacion(t.id, id, nota)
+    if (!r.ok) {
+      setError(r.error)
+      notificar(r.error, 'error')
+    }
+  }
+  return (
+    <li>
+      <Card className="space-y-3 !border-2 !border-tomate !p-4" data-testid={`apelacion-${t.folio}`}>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <p className="flex min-w-0 items-center gap-2 text-lg font-bold"><Ticket size={20} className="shrink-0 text-tomate" aria-hidden="true" /> {t.folio} · {t.puestoNombre}</p>
+          <Pill tono="tomate">Ticket de apelación</Pill>
+        </div>
+        <p className="break-words text-base"><b>Motivo:</b> {t.motivoTexto}</p>
+        <p className="break-words text-base"><b>{t.autorNombre} dice:</b> {t.texto}</p>
+        <p className="text-base">Tarifa actual: <b>{dinero(t.tarifaActual)}/sem</b> · Abierto el {cuando(t.creado)}</p>
+        <label className="block text-base font-bold" htmlFor={`res-${t.id}`}>Nota de resolución <span className="font-medium text-piedra">(obligatoria)</span></label>
+        <textarea id={`res-${t.id}`} rows={2} maxLength={300} className={`${campo} py-2`} value={nota} onChange={(ev) => setNota(ev.target.value)} placeholder="Ej.: Revisamos tus ventas y bajamos tu cuota." />
+        {error && <p role="alert" className="font-bold text-[#A8391B]">{error}</p>}
+        <Button variante="primario" className="w-full" onClick={() => decidir('mantener')}>Mantener tarifa ({dinero(t.tarifaActual)}/sem)</Button>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {APROBACIONES.filter((a) => a.tarifa !== t.tarifaActual).map((a) => (
+            <Button key={a.id} variante="contorno" onClick={() => decidir(a.id)}>{a.etiqueta.replace('Aprobar · ', 'Cambiar a ')}</Button>
+          ))}
+        </div>
+      </Card>
+    </li>
+  )
+}
+
+function Apelaciones() {
+  const { apelaciones } = useApp()
+  const abiertas = apelaciones.filter((a) => a.estado === 'abierta')
+  const resueltas = apelaciones.filter((a) => a.estado === 'resuelta')
+  if (apelaciones.length === 0) return null
+  return (
+    <div className="space-y-3" data-testid="apelaciones">
+      <h3 className="text-xl">Tickets de apelación de tarifa ({abiertas.length} abiertos)</h3>
+      {abiertas.length > 0 && <ul className="space-y-3">{abiertas.map((t) => <FilaApelacion key={t.id} t={t} />)}</ul>}
+      {resueltas.length > 0 && (
+        <ul className="divide-y divide-borde rounded-xl border border-borde bg-white px-3 text-base">
+          {resueltas.map((t) => (
+            <li key={t.id} className="py-2"><b>{t.folio} · {t.puestoNombre}</b> · resuelto: {t.cambio ? `nueva tarifa ${dinero(t.tarifaNueva)}/sem` : `se mantiene ${dinero(t.tarifaNueva)}/sem`}<span className="block break-words text-sm text-piedra">{t.resolucion}</span></li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 // Cola de verificación: el vendedor se autodeclara, el equipo confirma la tarifa justa.
 export default function TabPuestos() {
   const { puestos } = useApp()
@@ -94,6 +150,7 @@ export default function TabPuestos() {
         <h2 className="text-2xl">Verificación de puestos y asignación de plan</h2>
         <p className="text-base text-piedra">{pendientes} por revisar · {lista.length} en total. Revisa lo que declaró el vendedor y confirma la tarifa justa.</p>
       </div>
+      <Apelaciones />
       {lista.length === 0 ? (
         <Card><p className="text-base text-piedra">Todavía no hay puestos nuevos. Cuando un vendedor cree o cambie su puesto, aparece aquí.</p></Card>
       ) : (

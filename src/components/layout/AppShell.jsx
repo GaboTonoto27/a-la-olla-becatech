@@ -7,6 +7,7 @@ import BottomNav from './BottomNav.jsx'
 import PactoCalidad from '../PactoCalidad.jsx'
 import AyudanteFlotante from '../ayuda/AyudanteFlotante.jsx'
 import Toast from '../ui/Toast.jsx'
+import AvisosCuenta from '../cuenta/AvisosCuenta.jsx'
 
 export default function AppShell() {
   const { usuario, pactoAceptado } = useApp()
@@ -24,6 +25,7 @@ export default function AppShell() {
             Acceso restringido: esa pantalla es solo pa' la coordinación de A la Olla.
           </p>
         )}
+        {!esAdmin && <AvisosCuenta />}
         <Outlet />
       </main>
       {!esAdmin && <BottomNav />}

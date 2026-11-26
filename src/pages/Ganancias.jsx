@@ -7,6 +7,7 @@ import { sugerenciasVendedor } from '../lib/insights.js'
 import PanelEconomico from '../components/cuenta/PanelEconomico.jsx'
 import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
+import ApelacionTarifa from '../components/cuenta/ApelacionTarifa.jsx'
 
 function Sugerencias() {
   const { usuario, apartados, lotes, miPuesto, devoluciones, sinCelular } = useApp()
@@ -36,7 +37,7 @@ function Sugerencias() {
 
 // Ganancias e Insights: lo que recuperaste frente a la cuota, el PDF de la semana y consejos prácticos.
 export default function Ganancias() {
-  const { modo } = useApp()
+  const { modo, miPuesto } = useApp()
   if (modo !== 'vendedor') {
     return (
       <Card className="mx-auto max-w-lg space-y-3 text-center">
@@ -53,6 +54,7 @@ export default function Ganancias() {
         <p className="mt-1 text-lg text-piedra">Cuánto recuperaste esta semana y qué puedes mejorar.</p>
       </div>
       <PanelEconomico />
+      {miPuesto && typeof miPuesto.tarifa === 'number' && <ApelacionTarifa puesto={miPuesto} />}
       <Sugerencias />
     </div>
   )

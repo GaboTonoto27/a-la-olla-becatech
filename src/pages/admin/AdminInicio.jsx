@@ -26,13 +26,14 @@ const TABS = [
 ]
 
 function Campana({ irA }) {
-  const { denuncias, tickets, marcados, devoluciones, puestos, sinLeerAdmin, marcarTodoLeido } = useApp()
+  const { denuncias, tickets, marcados, devoluciones, puestos, apelaciones, sinLeerAdmin, marcarTodoLeido } = useApp()
   const [abierta, setAbierta] = useState(false)
   const items = [
     ...denuncias.filter((d) => !d.leida).map((d) => ({ id: d.id, tab: 'denuncias', texto: d.asunto, tipo: 'Denuncia', t: d.creado })),
     ...tickets.filter((t) => !t.leida).map((t) => ({ id: t.id, tab: 'tickets', texto: t.asunto, tipo: 'Ticket', t: t.creado })),
     ...devoluciones.filter((d) => !d.leida).map((d) => ({ id: d.id, tab: 'reembolsos', texto: `${d.producto} · ${d.autorNombre}`, tipo: 'Devolución', t: d.creado })),
     ...puestos.filter((p) => p.tipo === 'puesto' && p.verificacion?.estado === 'enviado' && !p.verificacion.leida).map((p) => ({ id: `v-${p.id}`, tab: 'puestos', texto: p.nombre, tipo: 'Puesto por verificar', t: p.verificacion.enviadoEn ?? 0 })),
+    ...apelaciones.filter((x) => x.estado === 'abierta' && !x.leida).map((x) => ({ id: x.id, tab: 'puestos', texto: `${x.folio} · ${x.puestoNombre}`, tipo: 'Ticket de apelación', t: x.creado })),
     ...marcados.filter((m) => !m.leida).map((m) => ({ id: m.id, tab: 'usuarios', texto: m.texto, tipo: 'Comentario marcado', t: m.creado })),
   ].sort((a, b) => b.t - a.t)
 

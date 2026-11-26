@@ -2,6 +2,7 @@
 import { clasificar, esOfensivo, ETIQUETA_NIVEL } from './copiloto.js'
 import { PERFILES_COMPRADOR } from '../data/seed.js'
 import { correoValido } from './verificacion.js'
+import { apelacionesDe, apelacionesSinLeer } from './apelaciones.js'
 import { listaPuestos } from '../data/puestos.js'
 import { RESPUESTAS_VACIAS, sugerirPlan, APROBACIONES } from './planPuesto.js'
 
@@ -384,6 +385,7 @@ export function marcarTodoLeido(e) {
       tickets: e.tickets.map((t) => ({ ...t, leida: true })),
       marcados: e.marcados.map((m) => ({ ...m, leida: true })),
       devoluciones: (e.devoluciones ?? []).map((d) => ({ ...d, leida: true })),
+      apelaciones: apelacionesDe(e).map((a) => ({ ...a, leida: true })),
       puestoOverrides: Object.fromEntries(
         Object.entries(e.puestoOverrides).map(([k, o]) => [k, o.verificacion ? { ...o, verificacion: { ...o.verificacion, leida: true } } : o]),
       ),
@@ -398,7 +400,8 @@ export const sinLeerAdmin = (e) =>
   e.tickets.filter((t) => !t.leida).length +
   e.marcados.filter((m) => !m.leida).length +
   (e.devoluciones ?? []).filter((d) => !d.leida).length +
-  pendientesVerificacion(e).filter((p) => !p.verificacion.leida).length
+  pendientesVerificacion(e).filter((p) => !p.verificacion.leida).length +
+  apelacionesSinLeer(e)
 
 // ---------- Soporte ----------
 export function crearTicket(e, d, ahora = Date.now()) {

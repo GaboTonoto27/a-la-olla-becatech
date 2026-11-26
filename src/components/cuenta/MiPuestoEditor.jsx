@@ -9,6 +9,8 @@ import Button from '../ui/Button.jsx'
 import Pill from '../ui/Pill.jsx'
 import FormPuesto, { puestoCompleto } from '../auth/FormPuesto.jsx'
 import HorarioPuesto from '../puestos/HorarioPuesto.jsx'
+import CriteriosTarifa from './CriteriosTarifa.jsx'
+import ApelacionTarifa from './ApelacionTarifa.jsx'
 
 const EFECTIVO = 'Efectivo contra inspección (primero revisas, luego pagas)'
 
@@ -40,6 +42,8 @@ function EstadoVerificacion({ puesto }) {
           <span><b>Nota del equipo:</b> {v.nota}</span>
         </p>
       )}
+      <CriteriosTarifa />
+      {definitiva && <ApelacionTarifa puesto={puesto} />}
       {v.estado === 'enviado' && <p className="text-base text-piedra">Ya mandaste tu puesto. Mientras tanto puedes seguir vendiendo.</p>}
       {(v.estado === 'prueba' || v.estado === 'ajuste') && (
         <>

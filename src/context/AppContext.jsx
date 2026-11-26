@@ -4,6 +4,7 @@ import { ciudadPorId } from '../data/ciudades.js'
 import * as reglas from '../lib/acciones.js'
 import * as social from '../lib/social.js'
 import * as dev from '../lib/devoluciones.js'
+import * as apel from '../lib/apelaciones.js'
 import { listaPuestos } from '../data/puestos.js'
 import { generarRespuestaContextual } from '../lib/respuestasChat.js'
 import { ETIQUETA_MEDIDA } from '../lib/copiloto.js'
@@ -348,7 +349,26 @@ export function AppProvider({ children }) {
     },
     resolverVerificacion: (id, decision, nota) => {
       const r = aplicar(social.resolverVerificacion, id, decision, nota)
-      if (r.ok) notificar(r.estado === 'ajuste' ? 'Ajuste solicitado al vendedor' : `Puesto verificado · ${r.op.nombre} ($${new Intl.NumberFormat('es-CO').format(r.op.tarifa)}/sem)`)
+      if (r.ok) {
+        aplicar((e) => ({ estado: apel.avisoDeVerificacion(e, id, r, nota), resultado: true }))
+        notificar(r.estado === 'ajuste' ? 'Ajuste solicitado al vendedor' : `Puesto verificado · ${r.op.nombre} ($${new Intl.NumberFormat('es-CO').format(r.op.tarifa)}/sem)`)
+      }
+      return r
+    },
+    apelaciones: estado.apelaciones ?? [],
+    avisosCuenta: apel.avisosDe(estado).filter((a) => usuario && a.cuentaId === usuario.id && !a.vista),
+    marcarAvisoVisto: (id) => aplicar(apel.marcarAvisoVisto, id),
+    abrirApelacion: (d) => {
+      const r = aplicar(apel.abrirApelacion, { autorId: usuario?.id, autorNombre: usuario?.nombre, ...d })
+      if (r.ok) {
+        avisarAdmin('A la Olla · Ticket de apelación', `${r.ticket.folio} · ${r.ticket.puestoNombre}`)
+        notificar(`Ticket ${r.ticket.folio} enviado. Revisión de tarifa en curso`)
+      } else notificar(r.error, 'error')
+      return r
+    },
+    resolverApelacion: (id, decision, nota) => {
+      const r = aplicar(apel.resolverApelacion, id, decision, nota)
+      if (r.ok) notificar(`Ticket ${r.ticket.folio} resuelto. Ya le avisamos al vendedor`)
       return r
     },
     editarCuenta: (id, cambios) => aplicar(social.editarCuenta, id, cambios),

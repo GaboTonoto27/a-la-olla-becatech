@@ -74,7 +74,7 @@ export function crearCuenta(e, d) {
     proveedor: d.proveedor ?? 'clave',
     rol,
     perfilComprador: perfil,
-    barrio: d.barrio?.trim() || 'Ciudadela 20 de Julio',
+    barrio: d.barrio?.trim() || '',
     negocio: p ? p.nombre.trim() : perfil === 'hogar' ? 'Hogar' : `${nombre} · ${etiquetaPerfil ?? 'Comprador'}`,
     etiqueta: rol === 'vendedor' ? 'Vendedor' : rol === 'ambos' ? 'Compra y vende' : etiquetaPerfil ?? 'Comprador',
     detalle: '',

@@ -121,3 +121,11 @@ export function barrioMasCercano(coord) {
 }
 
 export const distanciaABarrio = (coord, barrio) => (coord && barrio ? distanciaM(coord, [barrio.lat, barrio.lng]) : null)
+
+// Texto de zona según el barrio guardado de la cuenta (sin barrio: texto general del piloto).
+export function zonaTexto(ciudadNombre, barrio) {
+  const b = (barrio ?? '').trim()
+  if (!b) return `${ciudadNombre} · Puestos del piloto`
+  const hit = barrioExacto(b)
+  return `${hit && hit.zona !== 'Barranquilla' ? 'Área Metropolitana' : ciudadNombre} · ${hit?.nombre ?? b}`
+}

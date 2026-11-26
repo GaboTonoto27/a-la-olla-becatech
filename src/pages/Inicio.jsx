@@ -47,8 +47,14 @@ export default function Inicio() {
       <div>
         <h1 className="text-3xl text-carbon sm:text-4xl">Buenas, {usuario.nombre}</h1>
         <p className="mt-1 text-lg text-piedra">
-          {vende ? `Tu puesto: ${miPuesto?.nombre ?? usuario.negocio}` : '¿Qué vas a cocinar hoy?'} · {ciudad.plaza}
+          {vende ? `Tu puesto: ${miPuesto?.nombre ?? usuario.negocio}` : '¿Qué vas a cocinar hoy?'}
         </p>
+        {!vende && (
+          <p className="mt-1 text-base text-piedra">
+            Frutas y verduras disponibles en puestos de {ciudad.nombre}
+            {usuario.barrio?.trim() && <> · Calculando distancias desde {usuario.barrio.trim()}</>}
+          </p>
+        )}
       </div>
 
       <AvisoPlaza />
@@ -76,7 +82,7 @@ export default function Inicio() {
         <Card className="space-y-3 border-[#BCD8C5] bg-[#F4F9F5]">
           <h2 className="text-2xl">Tu primera olla, paso a paso</h2>
           <p className="text-base text-piedra">
-            Aún no tienes apartados ni encargos. Mira lo que hay hoy en {ciudad.plaza} y aparta un lote sin pago adelantado, o cuéntanos qué vas a cocinar y los puestos te responden con su precio.
+            Aún no tienes apartados ni encargos. Mira lo que hay hoy en los puestos de {ciudad.nombre} y aparta un lote sin pago adelantado, o cuéntanos qué vas a cocinar y los puestos te responden con su precio.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             <Button to="/ultima-hora" variante="acento" icono={Zap}>Ver lo que hay hoy</Button>

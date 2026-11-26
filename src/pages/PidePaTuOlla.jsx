@@ -11,7 +11,7 @@ function Comprador() {
     <div className="space-y-5">
       <div>
         <h1 className="text-3xl sm:text-4xl">Pide pa' tu olla</h1>
-        <p className="mt-1 text-lg text-piedra">Cuéntanos qué vas a cocinar. Los puestos de {ciudad.plaza} te responden con su precio.</p>
+        <p className="mt-1 text-lg text-piedra">Cuéntanos qué vas a cocinar. Los puestos de {ciudad.nombre} te responden con su precio.</p>
       </div>
       <AvisoPlaza />
       <NuevoPedido />

@@ -67,7 +67,7 @@ export function publicarLote(e, usuario, ciudad, d, puesto, ahora = Date.now()) 
     ciudad: ciudad.id,
     vendedorId: usuario.id,
     puesto: puesto?.nombre ?? usuario.negocio,
-    barrio: puesto?.barrio ?? usuario.barrio ?? ciudad.plaza,
+    barrio: puesto?.barrio || usuario.barrio || ciudad.plaza,
     foto: puesto?.fotos?.[0] ?? null,
     formal,
     frio: formal,

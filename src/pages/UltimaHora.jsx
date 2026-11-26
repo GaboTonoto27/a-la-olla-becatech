@@ -73,7 +73,8 @@ function Comprador({ ahora }) {
     <div className="space-y-5">
       <div>
         <h1 className="text-3xl sm:text-4xl">Última hora</h1>
-        <p className="mt-1 text-lg text-piedra">Comida buena de {ciudad.plaza}, a menor precio antes del cierre.</p>
+        <p className="mt-1 text-lg text-piedra">Frutas y verduras disponibles en puestos de {ciudad.nombre}, a menor precio antes del cierre.</p>
+        {usuario.barrio?.trim() && <p className="text-base text-piedra">Calculando distancias desde {usuario.barrio.trim()}</p>}
       </div>
       <AvisoPlaza />
       <AvisoCierre ahora={ahora} />

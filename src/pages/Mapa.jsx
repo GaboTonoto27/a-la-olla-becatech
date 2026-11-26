@@ -166,8 +166,8 @@ export default function Mapa() {
         <h1 className="text-3xl sm:text-4xl">{vende ? "Encargos cerca de tu puesto" : 'Puestos cerca de ti'}</h1>
         <p className="mt-1 text-lg text-piedra">
           {vende
-            ? "Restaurantes, juguerías y hogares que piden pa' la olla en " + ciudad.plaza + '.'
-            : `Puestos de ${ciudad.plaza}: con nevera, al ambiente y con lotes hoy.`}
+            ? "Restaurantes, juguerías y hogares que piden pa' la olla en " + ciudad.nombre + '.'
+            : `Puestos de ${ciudad.nombre}: con nevera, al ambiente y con lotes hoy.`}
         </p>
       </div>
       <AvisoPlaza />

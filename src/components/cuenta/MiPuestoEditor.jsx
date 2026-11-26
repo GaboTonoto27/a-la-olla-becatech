@@ -60,7 +60,7 @@ export default function MiPuestoEditor({ puesto }) {
   const { editarPuesto, cambiarEstandar, sinCelular, cambiarSinCelular, usuario, notificar } = useApp()
   const inicial = () => ({
     nombre: puesto.nombre,
-    barrio: puesto.barrio ?? usuario.barrio ?? '',
+    barrio: puesto.barrio || usuario.barrio || '',
     formal: Boolean(puesto.formal),
     respuestas: respuestasDe(puesto),
     coord: puesto.coord,

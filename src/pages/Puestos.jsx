@@ -46,7 +46,7 @@ export default function Puestos() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-3xl sm:text-4xl">Puestos de {ciudad.plaza}</h1>
+        <h1 className="text-3xl sm:text-4xl">Puestos de {ciudad.nombre}</h1>
         <p className="mt-1 text-lg text-piedra">Mira quién tiene nevera, quién no y qué lotes tiene hoy.</p>
       </div>
       <AvisoPlaza />

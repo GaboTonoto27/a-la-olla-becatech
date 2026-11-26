@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom'
 import { Map, MapPin, MessageCircle } from 'lucide-react'
 import { useApp } from '../../context/AppContext.jsx'
+import { zonaTexto } from '../../utils/barrios.js'
 import Punto from '../ui/Punto.jsx'
 
 // La app es local: se opera en una sola zona. Aquí queda a la vista y el atajo al chat seguro.
 export default function ZonaBar() {
-  const { ciudad, avisos } = useApp()
+  const { ciudad, avisos, usuario } = useApp()
   return (
     <div className="border-t border-borde bg-white">
       <div className="mx-auto flex min-h-[48px] max-w-5xl items-center gap-2 px-4">
         <MapPin size={20} className="shrink-0 text-olla" aria-hidden="true" />
         <p className="min-w-0 flex-1 truncate text-base font-bold text-carbon">
-          {ciudad.nombre} · {ciudad.plaza} y alrededores
+          {zonaTexto(ciudad.nombre, usuario.barrio)}
         </p>
         <Link to="/mapa" className="flex min-h-[48px] shrink-0 items-center gap-1.5 rounded-xl px-2 text-base font-bold text-olla hover:bg-marfil md:hidden">
           <Map size={22} aria-hidden="true" />

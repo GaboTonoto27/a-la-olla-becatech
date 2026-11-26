@@ -56,6 +56,7 @@ export default function MiPuestoEditor({ puesto }) {
   const { editarPuesto, cambiarEstandar, sinCelular, cambiarSinCelular, usuario, notificar } = useApp()
   const inicial = () => ({
     nombre: puesto.nombre,
+    barrio: puesto.barrio ?? usuario.barrio ?? '',
     formal: Boolean(puesto.formal),
     respuestas: respuestasDe(puesto),
     coord: puesto.coord,
@@ -89,6 +90,7 @@ export default function MiPuestoEditor({ puesto }) {
     const sugerido = sugerirPlan(f.respuestas)
     const cambios = {
       nombre: f.nombre.trim(),
+      barrio: f.barrio.trim() || puesto.barrio,
       formal: f.formal,
       respuestas: f.respuestas,
       sugerido,
@@ -137,7 +139,7 @@ export default function MiPuestoEditor({ puesto }) {
       )}
       {abierto && (
         <>
-          <FormPuesto valor={f} onChange={setF} puestoId={puesto.id} onFotos={cambiarFotos} onConfirmarUbicacion={confirmarUbicacion} ubicacionActual={usuario.ubicacion ?? null} barrio={puesto.barrio ?? usuario.barrio} />
+          <FormPuesto valor={f} onChange={setF} puestoId={puesto.id} onFotos={cambiarFotos} onConfirmarUbicacion={confirmarUbicacion} ubicacionActual={usuario.ubicacion ?? null} />
           <div className="grid grid-cols-2 gap-2">
             <Button variante="suave" onClick={() => setAbierto(false)}>Cancelar</Button>
             <Button onClick={guardar} disabled={!puestoCompleto(f)}>Guardar cambios</Button>

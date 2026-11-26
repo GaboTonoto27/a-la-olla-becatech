@@ -12,6 +12,8 @@ import Logo from '../components/ui/Logo.jsx'
 import LucesNavidad from '../components/ui/LucesNavidad.jsx'
 import Toast from '../components/ui/Toast.jsx'
 import FormPuesto, { PUESTO_VACIO, campo, puestoCompleto } from '../components/auth/FormPuesto.jsx'
+import CampoBarrio from '../components/auth/CampoBarrio.jsx'
+import RestaurarDemo from '../components/auth/RestaurarDemo.jsx'
 import OAuthModal from '../components/auth/OAuthModal.jsx'
 import CuentasDemo from '../components/auth/CuentasDemo.jsx'
 
@@ -109,7 +111,7 @@ function CrearCuenta() {
           <h2 className="text-2xl">Tu puesto</h2>
           <p className="text-base text-piedra">Una sola pantalla. Después lo cambias cuando quieras en Mi cuenta.</p>
         </div>
-        <FormPuesto valor={puesto} onChange={setPuesto} barrio={f.barrio} />
+        <FormPuesto valor={puesto} onChange={setPuesto} />
         <Button type="submit" className="w-full" disabled={!puestoCompleto(puesto)}>
           Crear mi cuenta y mi puesto
         </Button>
@@ -128,6 +130,7 @@ function CrearCuenta() {
         if (!correoValido(correo)) return setError('Escribe un correo real, por ejemplo nombre@gmail.com.')
         if (cuentas.some((c) => c.correo.toLowerCase() === correo)) return setError('Ese correo ya tiene cuenta. Entra desde "Iniciar sesión".')
         setError('')
+        if (vende) setPuesto((p) => ({ ...p, barrio: p.barrio || f.barrio.trim() }))
         setPaso(vende ? 2 : 3)
       }}
     >
@@ -143,10 +146,7 @@ function CrearCuenta() {
         Contraseña (mínimo 6)
         <input required type="password" minLength={6} value={f.clave} onChange={(e) => setF({ ...f, clave: e.target.value })} autoComplete="new-password" className={`mt-1 ${campo}`} />
       </label>
-      <label className="block text-base font-semibold">
-        Tu barrio
-        <input required value={f.barrio} onChange={(e) => setF({ ...f, barrio: e.target.value })} placeholder="Escribe tu barrio o sector" autoComplete="off" className={`mt-1 ${campo}`} />
-      </label>
+      <CampoBarrio id="reg-barrio" requerido valor={f.barrio} onChange={(barrio) => setF({ ...f, barrio })} />
 
       <div>
         <p className="mb-2 text-base font-bold">¿Qué vas a hacer?</p>
@@ -238,6 +238,9 @@ export default function Login() {
         </div>
 
         <CuentasDemo onAutocompletar={autocompletar} />
+        <div className="mt-3 flex justify-center">
+          <RestaurarDemo />
+        </div>
 
         <p className="mt-8 flex items-start gap-2 text-sm text-piedra">
           <Phone size={16} className="mt-0.5 shrink-0" aria-hidden="true" />

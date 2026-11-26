@@ -150,6 +150,11 @@ export function AppProvider({ children }) {
     setEstado((e) => ({ ...e, modo: e.modo === 'vendedor' ? 'comprador' : 'vendedor' }))
   }, [])
   const reiniciarDemo = useCallback(() => setEstado(reglas.iniciar(limpiarStore())), [])
+  // Igual que reiniciarDemo, pero avisa con un toast (se usa en el login y en el panel Admin).
+  const restaurarDemo = useCallback(() => {
+    setEstado(reglas.iniciar(limpiarStore()))
+    notificar('Datos demo restaurados. Todo quedó como de fábrica')
+  }, [notificar])
 
   const sinCelular = useCallback(
     (vendedorId) => estado.sinCelular[vendedorId] ?? cuentas.find((c) => c.id === vendedorId)?.sinCelular ?? false,
@@ -329,6 +334,7 @@ export function AppProvider({ children }) {
     aceptarPacto,
     toggleModo,
     reiniciarDemo,
+    restaurarDemo,
     sinCelular,
     cambiarSinCelular,
     editarPuesto: (id, cambios) => aplicar(social.editarPuesto, id, cambios),

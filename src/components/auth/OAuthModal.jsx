@@ -7,6 +7,7 @@ import Modal from '../ui/Modal.jsx'
 import Button from '../ui/Button.jsx'
 import Chip from '../ui/Chip.jsx'
 import { campo } from './FormPuesto.jsx'
+import CampoBarrio from './CampoBarrio.jsx'
 
 const ROLES = [
   { id: 'comprador', etiqueta: 'Solo compro' },
@@ -91,8 +92,7 @@ export default function OAuthModal({ proveedor, onCerrar }) {
           {!existe && (
             <>
               <div>
-                <label htmlFor="oa-barrio" className="mb-1 block text-base font-bold">Tu barrio <span className="font-medium text-piedra">(opcional)</span></label>
-                <input id="oa-barrio" className={campo} value={f.barrio} onChange={(e) => setF({ ...f, barrio: e.target.value })} placeholder="Escribe tu barrio o sector" autoComplete="off" />
+                <CampoBarrio id="oa-barrio" opcional valor={f.barrio} onChange={(barrio) => setF({ ...f, barrio })} />
               </div>
               <div>
                 <p className="mb-2 text-base font-bold">¿Qué vas a hacer?</p>

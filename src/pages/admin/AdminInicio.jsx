@@ -11,6 +11,7 @@ import TabTickets from './TabTickets.jsx'
 import TabExpansion from './TabExpansion.jsx'
 import TabAnalitica from './TabAnalitica.jsx'
 import TabPuestos from './TabPuestos.jsx'
+import RestaurarDemo from '../../components/auth/RestaurarDemo.jsx'
 
 
 const TABS = [
@@ -109,6 +110,7 @@ export default function AdminInicio() {
         <div className="flex flex-wrap items-start gap-3">
           <BotonPush />
           <Button variante="suave" icono={LogOut} onClick={salir}>Salir</Button>
+          <RestaurarDemo />
         </div>
       </Card>
 

@@ -96,7 +96,7 @@ export function crearCuenta(e, d) {
         ciudad: 'bq',
         tipo: 'puesto',
         nombre: p.nombre.trim(),
-        barrio: cuenta.barrio,
+        barrio: p.barrio?.trim() || cuenta.barrio,
         direccion: p.direccion?.trim() || 'Ubicación marcada en el mapa',
         descripcion: p.descripcion?.trim() || '',
         coord: p.coord ?? CENTRO_BQ,

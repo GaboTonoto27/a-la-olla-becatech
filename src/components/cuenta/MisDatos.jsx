@@ -6,6 +6,7 @@ import Card from '../ui/Card.jsx'
 import Button from '../ui/Button.jsx'
 import Chip from '../ui/Chip.jsx'
 import { campo } from '../auth/FormPuesto.jsx'
+import CampoBarrio from '../auth/CampoBarrio.jsx'
 
 const SelectorUbicacion = lazy(() => import('../mapa/SelectorUbicacion.jsx'))
 
@@ -75,10 +76,7 @@ export default function MisDatos() {
             Tu nombre
             <input value={f.nombre} onChange={(e) => setF({ ...f, nombre: e.target.value })} autoComplete="name" className={`mt-1 ${campo}`} />
           </label>
-          <label className="block text-base font-semibold">
-            Tu barrio
-            <input value={f.barrio} onChange={(e) => setF({ ...f, barrio: e.target.value })} autoComplete="off" className={`mt-1 ${campo}`} />
-          </label>
+          <CampoBarrio id="datos-barrio" valor={f.barrio} onChange={(barrio) => setF({ ...f, barrio })} />
           {compra && (
             <div>
               <p className="mb-2 text-base font-bold">¿Pa' qué compras?</p>

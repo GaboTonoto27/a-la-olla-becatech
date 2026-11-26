@@ -32,12 +32,19 @@ export function consultasDe(texto, barrio = '') {
 }
 
 async function consultar(q, fetcher, senal) {
-  const url = `${URL_BUSQUEDA}?${new URLSearchParams({ format: 'jsonv2', limit: '1', countrycodes: 'co', viewbox: VIEWBOX, bounded: '1', 'accept-language': 'es', q })}`
+  const url = `${URL_BUSQUEDA}?${new URLSearchParams({ format: 'jsonv2', limit: '1', addressdetails: '1', countrycodes: 'co', viewbox: VIEWBOX, bounded: '1', 'accept-language': 'es', q })}`
   const r = await fetcher(url, { signal: senal, headers: { Accept: 'application/json' } })
   if (!r.ok) throw new Error(`HTTP ${r.status}`)
   const lista = await r.json()
   const p = lista?.[0]
-  return p ? { punto: [Number(p.lat), Number(p.lon)], nombre: String(p.display_name ?? '').split(',').slice(0, 3).join(',').trim() } : null
+  const a = p?.address ?? {}
+  return p
+    ? {
+        punto: [Number(p.lat), Number(p.lon)],
+        nombre: String(p.display_name ?? '').split(',').slice(0, 3).join(',').trim(),
+        barrio: a.suburb || a.neighbourhood || a.quarter || a.city_district || '', // el barrio que OpenStreetMap detecta en esa dirección
+      }
+    : null
 }
 
 export async function buscarDireccion(texto, barrio = '', fetcher = (...a) => fetch(...a)) {
@@ -51,9 +58,31 @@ export async function buscarDireccion(texto, barrio = '', fetcher = (...a) => fe
     await new Promise((r) => setTimeout(r, ESPERA_ENTRE_BUSQUEDAS_MS))
     const b = await consultar(simple, fetcher, control.signal)
     if (b) return { ok: true, ...b, aprox: true }
+    // Un barrio mal escrito no debe impedir ubicar la calle: último intento solo con la vía.
+    if (barrio.trim()) {
+      await new Promise((r) => setTimeout(r, ESPERA_ENTRE_BUSQUEDAS_MS))
+      const c = await consultar(consultasDe(texto).simple, fetcher, control.signal)
+      if (c) return { ok: true, ...c, aprox: true }
+    }
     return { ok: false, error: 'No encontramos esa dirección. Revisa cómo la escribiste o marca el punto tú mismo en el mapa.' }
   } catch {
     return { ok: false, error: 'No pudimos buscar la dirección (revisa tu internet). Puedes marcar el punto tú mismo en el mapa.' }
+  } finally {
+    clearTimeout(corte)
+  }
+}
+
+// ¿Existe ese barrio en Barranquilla / Atlántico? Devuelve { ok: true, nombre } | { ok: false } | { ok: false, error: true } si no hubo conexión.
+export async function verificarBarrio(texto, fetcher = (...a) => fetch(...a)) {
+  const t = String(texto ?? '').trim()
+  if (t.length < 3) return { ok: false }
+  const control = new AbortController()
+  const corte = setTimeout(() => control.abort(), 10000)
+  try {
+    const r = await consultar(`${t}, Barranquilla, Atlántico, Colombia`, fetcher, control.signal)
+    return r ? { ok: true, nombre: r.nombre } : { ok: false }
+  } catch {
+    return { ok: false, error: true }
   } finally {
     clearTimeout(corte)
   }

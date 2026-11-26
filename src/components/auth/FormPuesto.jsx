@@ -8,10 +8,11 @@ import Chip from '../ui/Chip.jsx'
 import Button from '../ui/Button.jsx'
 import { ATAJOS, DIAS, HORAS, POR_DEFECTO, formatoHora, horarioValido, textoHorario } from '../../lib/horarioPuesto.js'
 import { buscarDireccion } from '../../lib/geocodificar.js'
+import CampoBarrio from './CampoBarrio.jsx'
 
 const SelectorUbicacion = lazy(() => import('../mapa/SelectorUbicacion.jsx'))
 
-export const PUESTO_VACIO = { nombre: '', formal: false, coord: null, zona: true, nequi: false, sinCelular: false, plan: 'popular', respuestas: RESPUESTAS_VACIAS, direccion: '', ...POR_DEFECTO, horario: textoHorario(POR_DEFECTO.dias, POR_DEFECTO.horaAbre, POR_DEFECTO.horaCierra), descripcion: '', fotos: [] }
+export const PUESTO_VACIO = { nombre: '', formal: false, coord: null, zona: true, nequi: false, sinCelular: false, plan: 'popular', respuestas: RESPUESTAS_VACIAS, barrio: '', direccion: '', ...POR_DEFECTO, horario: textoHorario(POR_DEFECTO.dias, POR_DEFECTO.horaAbre, POR_DEFECTO.horaCierra), descripcion: '', fotos: [] }
 // El formulario del puesto está listo pa' guardar: nombre, punto en el mapa y un horario con días y cierre posterior a la apertura.
 export const puestoCompleto = (v) => v.nombre.trim().length >= 2 && Boolean(v.coord) && horarioValido(v)
 export const campo = 'min-h-[48px] w-full rounded-xl border border-borde bg-white px-4 text-base'
@@ -159,7 +160,7 @@ function SelectorHorario({ valor, poner }) {
 }
 
 // Alta rápida (y edición) de un puesto en una sola pantalla.
-export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFotos, onConfirmarUbicacion, ubicacionActual = null, barrio = '' }) {
+export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFotos, onConfirmarUbicacion, ubicacionActual = null }) {
   const { notificar } = useApp()
   const poner = (c) => onChange({ ...valor, ...c })
   const [busq, setBusq] = useState({ estado: 'idle' }) // idle | buscando | confirmar | ajustar | listo | nada
@@ -169,11 +170,11 @@ export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFoto
   // Dirección escrita → punto en el mapa (Nominatim, solo Barranquilla). El vendedor confirma o ajusta el punto.
   const ubicarDireccion = async () => {
     setBusq({ estado: 'buscando' })
-    const r = await buscarDireccion(valor.direccion, barrio)
+    const r = await buscarDireccion(valor.direccion, valor.barrio ?? '')
     if (!r.ok) return setBusq({ estado: 'nada', error: r.error })
     poner({ coord: r.punto })
     setFoco({ punto: r.punto, n: Date.now() })
-    setBusq({ estado: 'confirmar', punto: r.punto, nombre: r.nombre, aprox: r.aprox })
+    setBusq({ estado: 'confirmar', punto: r.punto, nombre: r.nombre, aprox: r.aprox, barrio: r.barrio })
     mapaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
   const confirmarBusqueda = () => {
@@ -195,6 +196,8 @@ export default function FormPuesto({ valor, onChange, puestoId = 'nuevo', onFoto
         <label htmlFor="puesto-nombre" className="mb-1 block text-base font-bold">Nombre del puesto</label>
         <input id="puesto-nombre" className={campo} value={valor.nombre} maxLength={40} onChange={(e) => poner({ nombre: e.target.value })} placeholder="Ej.: Frutas Doña Marta" />
       </div>
+
+      <CampoBarrio id="puesto-barrio" valor={valor.barrio ?? ''} onChange={(barrio) => poner({ barrio })} coord={valor.coord} detectado={busq.barrio ?? ''} />
 
       <div>
         <label htmlFor="puesto-dir" className="mb-1 block text-base font-bold">Dirección escrita</label>
